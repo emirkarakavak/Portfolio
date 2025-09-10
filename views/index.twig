@@ -527,31 +527,41 @@
             activateTab(file);
         }
 
-        function activateTab(file) {
-            // tabs
-            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.file === file));
-            // panes
-            document.querySelectorAll('.pane').forEach(p => p.classList.toggle('active', p.dataset.file === file));
-            // remember last
-            //localStorage.setItem('lastFile', file);
+        function activateTab(file){
+        // Sekmeler
+        document.querySelectorAll('.tab')
+            .forEach(t => t.classList.toggle('active', t.dataset.file === file));
+
+        // Hedef pane: dosya yoksa welcome'ı aç
+        const target = file || "__welcome__";
+
+        document.querySelectorAll('.pane')
+            .forEach(p => p.classList.toggle('active', p.dataset.file === target));
+
+        // lastFile yönetimi (dosya yoksa temizle)
+        if (file) localStorage.setItem('lastFile', file);
+        else localStorage.removeItem('lastFile');
         }
 
-        function closeTab(file) {
-            const tab = openFiles.get(file);
-            if (!tab) return;
-            const isActive = tab.classList.contains('active');
-            tab.remove();
-            openFiles.delete(file);
-            // hide pane if not in any other open tab
-            if (isActive) {
-                const remaining = [...openFiles.keys()];
-                activateTab(remaining[remaining.length - 1] || null);
-                if (!remaining.length) {
-                    // if nothing open, deactivate all panes
-                    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
-                }
+
+        function closeTab(file){
+        const tab = openFiles.get(file);
+        if(!tab) return;
+        const isActive = tab.classList.contains('active');
+        tab.remove();
+        openFiles.delete(file);
+
+        if(isActive){
+            const remaining = [...openFiles.keys()];
+            if (remaining.length){
+            activateTab(remaining[remaining.length - 1]);
+            } else {
+            // Hiç sekme kalmadı → Welcome
+            activateTab("__welcome__");
             }
         }
+        }
+
 
         // tree clicks
         treeEl.addEventListener('click', (e) => {
