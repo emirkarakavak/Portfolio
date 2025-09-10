@@ -175,6 +175,10 @@
         .tree .item small {
             color: var(--muted)
         }
+        .settings{
+            margin:0!important;
+            padding:0!important;
+        }
 
         /* Tabs */
         .tabs {
@@ -345,32 +349,33 @@
 
 
         <!-- Explorer -->
-        <aside class="explorer">
-            <div class="header">EXPLORER</div>
-            <div class="tree" id="tree">
-                <details open>
-                    <summary>portfolio</summary>
+<aside class="explorer">
+  <div class="header">EXPLORER</div>
+  <div class="tree" id="tree">
+    <details open>
+      <summary>portfolio</summary>
 
-                    <div class="item" data-file="README.md">📄 README.md</div>
+      <div class="item" data-file="README.md">📄 README.md</div>
 
-                    <details open>
-                        <summary>src</summary>
-                        <div class="item" data-file="about.ts">👤 about.ts</div>
-                        <div class="item" data-file="projects.ts">🧪 projects.ts</div>
-                        <div class="item" data-file="contact.ts">✉️ contact.ts</div>
-                        <div class="item" data-file="settings.json">⚙️ settings.json</div>
+      <details open>
+        <summary>src</summary>
+        <div class="item" data-file="about.ts">👤 about.ts</div>
+        <div class="item" data-file="projects.ts">🧪 projects.ts</div>
+        <div class="item" data-file="contact.ts">✉️ contact.ts</div>
+      </details>
 
-                    </details>
+      <details open>
+        <summary>public</summary>
+        <div class="item" data-file="resume.pdf">📑 resume.pdf</div>
+        <div class="item" data-file="resume-eng.pdf">📑 resume-eng.pdf</div>
+      </details>
 
-                    <details open>
-                        <summary>public</summary>
-                        <div class="item" data-file="resume.pdf">📑 resume.pdf</div>
-                        <div class="item" data-file="resume-eng.pdf">📑 resume-eng.pdf</div>
-                    </details>
+      <!-- settings.json artık kökte -->
+      <div class="item settings" data-file="settings.json">⚙️ settings.json</div>
 
-                </details>
-            </div>
-        </aside>
+    </details>
+  </div>
+</aside>
 
         <!-- Editor -->
         <section class="editor">
@@ -527,41 +532,31 @@
             activateTab(file);
         }
 
-        function activateTab(file){
-        // Sekmeler
-        document.querySelectorAll('.tab')
-            .forEach(t => t.classList.toggle('active', t.dataset.file === file));
-
-        // Hedef pane: dosya yoksa welcome'ı aç
-        const target = file || "__welcome__";
-
-        document.querySelectorAll('.pane')
-            .forEach(p => p.classList.toggle('active', p.dataset.file === target));
-
-        // lastFile yönetimi (dosya yoksa temizle)
-        if (file) localStorage.setItem('lastFile', file);
-        else localStorage.removeItem('lastFile');
+        function activateTab(file) {
+            // tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.file === file));
+            // panes
+            document.querySelectorAll('.pane').forEach(p => p.classList.toggle('active', p.dataset.file === file));
+            // remember last
+            //localStorage.setItem('lastFile', file);
         }
 
-
-        function closeTab(file){
-        const tab = openFiles.get(file);
-        if(!tab) return;
-        const isActive = tab.classList.contains('active');
-        tab.remove();
-        openFiles.delete(file);
-
-        if(isActive){
-            const remaining = [...openFiles.keys()];
-            if (remaining.length){
-            activateTab(remaining[remaining.length - 1]);
-            } else {
-            // Hiç sekme kalmadı → Welcome
-            activateTab("__welcome__");
+        function closeTab(file) {
+            const tab = openFiles.get(file);
+            if (!tab) return;
+            const isActive = tab.classList.contains('active');
+            tab.remove();
+            openFiles.delete(file);
+            // hide pane if not in any other open tab
+            if (isActive) {
+                const remaining = [...openFiles.keys()];
+                activateTab(remaining[remaining.length - 1] || null);
+                if (!remaining.length) {
+                    // if nothing open, deactivate all panes
+                    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+                }
             }
         }
-        }
-
 
         // tree clicks
         treeEl.addEventListener('click', (e) => {
