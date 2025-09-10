@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="tr">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Portfolio – VSCode Theme</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root {
+            --bg: #1e1e1e;
+            --panel: #252526;
+            --panel-2: #2d2d30;
+            --border: #3c3c3c;
+            --text: #d4d4d4;
+            --muted: #9da0a6;
+            --accent: #0e639c;
+            --accent-2: #3794ff;
+            --tab-active: #1f2430;
+            --tab-inactive: #2b2b2b;
+            --tab-border: #3e3e42;
+            --green: #89d185;
+            --yellow: #dcdcaa;
+            --purple: #c586c0;
+            --blue: #4fc1ff;
+            --red: #f48771;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            overflow: hidden;
+        }
+
+        /* Top Title Bar (fake VSCode) */
+        .titlebar {
+            height: 32px;
+            background: #3c3c3c;
+            color: #eee;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: 0 .5rem;
+            user-select: none;
+        }
+
+        .titlebar .traffic {
+            display: flex;
+            gap: .4rem;
+            margin-right: .5rem
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%
+        }
+
+        .dot.red {
+            background: #ff5f56
+        }
+
+        .dot.yellow {
+            background: #ffbd2e
+        }
+
+        .dot.green {
+            background: #27c93f
+        }
+
+        .titlebar .title {
+            margin-left: .25rem;
+            opacity: .9;
+            font-size: 12px
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 48px 260px 1fr;
+            height: calc(100% - 32px);
+        }
+
+        /* Activity bar (icons) */
+        .activity {
+            background: #333333;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: .5rem 0;
+            gap: .5rem;
+        }
+
+        .activity button {
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: 0;
+            border-radius: 6px;
+            color: #c5c5c5;
+            cursor: pointer;
+        }
+
+        .activity button.active,
+        .activity button:hover {
+            background: #3f3f46;
+            color: #fff
+        }
+
+        /* Explorer */
+        .explorer {
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+        }
+
+        .explorer .header {
+            padding: .6rem .75rem;
+            color: #bbb;
+            font-weight: 600;
+            letter-spacing: .06em;
+            font-size: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tree {
+            padding: .5rem .25rem;
+            overflow: auto
+        }
+
+        .tree details {
+            padding: .15rem 0
+        }
+
+        .tree summary {
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            color: #ddd;
+        }
+
+        .tree summary::-webkit-details-marker {
+            display: none
+        }
+
+        .tree .item {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .15rem .25rem .15rem 1.4rem;
+            margin-left: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #ddd;
+        }
+
+        .tree .item:hover {
+            background: var(--panel-2)
+        }
+
+        .tree .item small {
+            color: var(--muted)
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            align-items: stretch;
+            height: 36px;
+            background: var(--panel-2);
+            border-bottom: 1px solid var(--tab-border);
+            overflow: auto hidden;
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: 0 .75rem;
+            border-right: 1px solid var(--tab-border);
+            background: var(--tab-inactive);
+            color: #cfcfcf;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background: var(--tab-active);
+            color: #fff;
+            box-shadow: inset 0 -2px 0 var(--accent-2)
+        }
+
+        .tab .x {
+            opacity: .7;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        .tab .x:hover {
+            opacity: 1
+        }
+
+        /* Editor area */
+        .editor {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content {
+            position: relative;
+            height: calc(100% - 36px);
+            overflow: auto;
+            padding: 1rem 1.25rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .pane {
+            display: none
+        }
+
+        .pane.active {
+            display: block
+        }
+
+        /* “code” look for sections */
+        pre {
+            background: #1b1b1b;
+            border: 1px solid #2b2b2b;
+            border-radius: 6px;
+            padding: 1rem;
+            overflow: auto;
+        }
+
+        .kv {
+            color: var(--yellow)
+        }
+
+        .str {
+            color: var(--green)
+        }
+
+        .id {
+            color: var(--blue)
+        }
+
+        .fn {
+            color: var(--purple)
+        }
+
+        .badge {
+            display: inline-block;
+            border: 1px solid var(--border);
+            padding: .15rem .4rem;
+            border-radius: 999px;
+            margin: .15rem .25rem 0 0;
+            font-size: 12px;
+            color: #bbb
+        }
+
+        /* Responsiveness */
+        @media (max-width: 900px) {
+            .main {
+                grid-template-columns: 48px 1fr
+            }
+
+            .explorer {
+                display: none
+            }
+
+            .main.show-explorer .explorer {
+                display: flex;
+                position: absolute;
+                left: 48px;
+                top: 32px;
+                bottom: 0;
+                width: 70%;
+                z-index: 8;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, .4)
+            }
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: var(--accent-2);
+            color: #fff;
+            padding: .6rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background .2s, transform .1s;
+        }
+
+        .download-btn:hover {
+            background: #2f7dd4;
+        }
+
+        .download-btn:active {
+            transform: scale(.97);
+        }
+
+        .pane[data-file="__welcome__"] a {
+            color: var(--accent-2);
+            text-decoration: none;
+        }
+
+        .pane[data-file="__welcome__"] a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="titlebar">
+        <div class="traffic">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        </div>
+        <strong>Visual Studio Code</strong>
+        <span class="title">– portfolio (Workspace)</span>
+    </div>
+
+    <div class="main" id="app">
+        <!-- Left activity bar -->
+        <aside class="activity">
+            <button id="toggle-explorer" title="Explorer" class="active">📁</button>
+            <button title="Search">🔎</button>
+            <button title="Source Control">🔱</button>
+            <button title="Run & Debug">▶️</button>
+            <button title="Extensions">🧩</button>
+        </aside>
+
+
+
+        <!-- Explorer -->
+        <aside class="explorer">
+            <div class="header">EXPLORER</div>
+            <div class="tree" id="tree">
+                <details open>
+                    <summary>portfolio</summary>
+
+                    <div class="item" data-file="README.md">📄 README.md</div>
+
+                    <details open>
+                        <summary>src</summary>
+                        <div class="item" data-file="about.ts">👤 about.ts</div>
+                        <div class="item" data-file="projects.ts">🧪 projects.ts</div>
+                        <div class="item" data-file="contact.ts">✉️ contact.ts</div>
+                        <div class="item" data-file="settings.json">⚙️ settings.json</div>
+
+                    </details>
+
+                    <details open>
+                        <summary>public</summary>
+                        <div class="item" data-file="resume.pdf">📑 resume.pdf</div>
+                        <div class="item" data-file="resume-eng.pdf">📑 resume-eng.pdf</div>
+                    </details>
+
+                </details>
+            </div>
+        </aside>
+
+        <!-- Editor -->
+        <section class="editor">
+            <div class="tabs" id="tabs"></div>
+            <div class="content" id="content">
+                <!-- PANE: welcome -->
+                <article class="pane active" data-file="__welcome__">
+                    <div style="padding:2rem;">
+                        <h2 style="margin-top:0; margin-bottom:1rem; font-size:1.4rem;">Welcome</h2>
+                        <p style="color:var(--muted); margin-bottom:2rem;">
+                            👋 Hoş geldiniz! Ben <strong>Yusuf Emir Karakavak</strong>.
+                            Backend Developer olarak Node.js & Express ile projeler geliştiriyorum.
+                        </p>
+
+                        <div style="display:flex; gap:3rem; flex-wrap:wrap;">
+                            <!-- Column 1 -->
+                            <div>
+                                <h3 style="margin-bottom:.5rem;">Get Started</h3>
+                                <ul style="list-style:none; padding:0; margin:0; line-height:1.8;">
+                                    <li><a href="#README.md">📄 Aç <strong>README.md</strong></a></li>
+                                    <li><a href="#projects.ts">🧪 Projelere göz at</a></li>
+                                    <li><a href="#about.ts">👤 Hakkımda</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Column 2 -->
+                            <div>
+                                <h3 style="margin-bottom:.5rem;">Resources</h3>
+                                <ul style="list-style:none; padding:0; margin:0; line-height:1.8;">
+                                    <li><a href="#resume.pdf">📑 CV (Türkçe)</a></li>
+                                    <li><a href="#resume-eng.pdf">📑 CV (English)</a></li>
+                                    <li><a href="https://github.com/emirkarakavak" target="_blank" rel="noopener noreferrer">🐙 GitHub</a></li>
+                                    <li><a href="https://www.linkedin.com/in/yusuf-emir-k-913a421a8" target="_blank" rel="noopener noreferrer">💼LinkedIn</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                <!-- PANE: README -->
+<article class="pane" data-file="README.md">
+  <pre>{
+  <span class="kv">author</span>: <span class="str">"Yusuf Emir Karakavak"</span>,
+  <span class="kv">role</span>: <span class="str">"Backend Developer"</span>,
+  <span class="kv">location</span>: <span class="str">"İzmir"</span>,
+  <span class="kv">stack</span>: <code>[<span class="str">"Node.js"</span>, <span class="str">"Express"</span>, <span class="str">"NestJS"</span>, <span class="str">"MongoDB"</span>, <span class="str">"Jest"</span>, <span class="str">"TypeScript"</span>]</code>,
+  <span class="kv">familiar</span>: [<span class="str">"Vue"</span>, <span class="str">"CI/CD"</span>, <span class="str">"Docker"</span>, <span class="str">"HTML"</span>, <span class="str">"CSS"</span>, <span class="str">"Bootstrap"</span>, <span class="str">"PHP"</span>, <span class="str">"CodeIgniter"</span>]
+}</pre>
+  <div>
+    <span class="badge">Node.js</span>
+    <span class="badge">Express</span>
+    <span class="badge">RESTful</span>
+    <span class="badge">API</span>
+    <span class="badge">Git</span>
+  </div>
+</article>
+
+                <!-- PANE: about -->
+                <article class="pane" data-file="about.ts">
+                    <pre><span class="kv">export</span> <span class="kv">const</span> <span class="id">aboutMe</span> = {
+  <span class="kv">name</span>: <span class="str">"Yusuf Emir Karakavak"</span>,
+  <span class="kv">bio</span>: <span class="str">"API tasarlayan, performansa takık bir Node.js geliştirici."</span>,
+  <span class="kv">interests</span>: [<span class="str">"Clean Architecture"</span>, <span class="str">"CI/CD"</span>, <span class="str">"Testing"</span>],
+  <span class="kv">links</span>: {
+    <span class="kv">github</span>: <span class="str">"https://github.com/emirkarakavak"</span>,
+    <span class="kv">linkedin</span>: <span class="str">"https://www.linkedin.com/in/yusuf-emir-k-913a421a8"</span>
+  }
+}</pre>
+                </article>
+
+                <!-- PANE: projects -->
+                <article class="pane" data-file="projects.ts">
+                    <pre><span class="kv">type</span> <span class="id">Project</span> = { name: string; desc?: string; tech: string[]; link?: string }
+<span class="kv">const</span> <span class="id">projects</span>: Project[] = [
+  { name: <span class="str">"helpdesk"</span>, desc: <span class="str">"Kapsamlı site kullanım rehberi/Yönetim paneli"</span>, tech: [<span class="str">"Node"</span>, <span class="str">"Express"</span>, <span class="str">"MongoDB"</span>, <span class="str">"Vue"</span>] },
+  { name: <span class="str">"realtime-donate-system"</span>, desc: <span class="str">"Yayıncılar ve izleyicileri buluşturan interaktif yayın yazılımı."</span>, tech: [<span class="str">"NodeJS"</span>, <span class="str">"MongoDB"</span>, <span class="str">"RabbitMQ"</span>, <span class="str">"AWS S3"</span>, <span class="str">"SocketIO"</span>] },
+  { name: <span class="str">"ai-based-chatbot"</span>, desc: <span class="str">"Operatöre bağlanmadan kullanıcı sorunlarını çözebilen yapay zeka destekli destek sistemi."</span>, tech: [<span class="str">"NodeJS"</span>, <span class="str">"MongoDB"</span>, <span class="str">"OpenAI"</span>, <span class="str">"JWT"</span>] },
+  { name: <span class="str">"stats"</span>, desc: <span class="str">"Gerçek zamanlı site istatistiklerini yöneticilere raporlayan panel."</span> },
+  { name: <span class="str">"fun-center"</span>, desc: <span class="str">"Kullanıcıların sipariş sürecinde vakit geçirebileceği mini oyun platformu."</span> },
+  { name: <span class="str">"topupcenter"</span>, desc: <span class="str">"Global ölçekte sanal (e-pin) ürünlerinin satış platformu."</span> },
+  { name: <span class="str">"pricebot"</span>, tech: [<span class="str">"NodeJS"</span>, <span class="str">"MongoDB"</span>, <span class="str">"Puppeteer"</span>, <span class="str">"ChartJS"</span>, <span class="str">"SocketIO"</span>] },
+]</pre>
+                </article>
+
+                <!-- PANE: contact -->
+                <article class="pane" data-file="contact.ts">
+                    <pre><span class="fn">function</span> <span class="id">sendMail</span>(name: string, email: string, message: string){
+  <span class="kv">return</span> <span class="str">`POST /api/contact { name, email, message }`</span>
+}</pre>
+                    <form id="contact-form" style="margin-top:1rem; display:grid; gap:.5rem; max-width:520px">
+                        <input required name="name" placeholder="Ad Soyad" />
+                        <input required name="email" type="email" placeholder="E-posta" />
+                        <textarea required name="message" rows="4" placeholder="Mesaj"></textarea>
+                        <button type="submit"
+                            style="background:var(--accent); color:#fff; border:0; padding:.6rem .9rem; border-radius:6px; cursor:pointer">Gönder</button>
+                        <p id="form-status" style="color:var(--muted); margin:0"></p>
+                    </form>
+                </article>
+
+                <!-- PANE: settings -->
+                <article class="pane" data-file="settings.json">
+                    <pre>{
+  <span class="kv">"theme"</span>: <span class="str">"vscode-dark-plus"</span>,
+  <span class="kv">"accentColor"</span>: <span class="str">"#3794ff"</span>,
+  <span class="kv">"showExplorerOnMobile"</span>: <span class="str">true</span>
+}</pre>
+                </article>
+
+                <!-- PANE: resume -->
+                <article class="pane" data-file="resume.pdf">
+                    <iframe src="cv.pdf" style="width:100%; height:80vh; border:none;"></iframe>
+                    <div style="margin-top:1rem;">
+                        <a href="cv.pdf" download class="download-btn">📑 CV’yi indir</a>
+                    </div>
+                </article>
+
+                <article class="pane" data-file="resume-eng.pdf">
+                    <iframe src="cv-eng.pdf" style="width:100%; height:80vh; border:none;"></iframe>
+                    <div style="margin-top:1rem;">
+                        <a href="cv-eng.pdf" download class="download-btn">📑 Download Resume</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // --- Minimal tab manager ---
+        const tabsEl = document.getElementById('tabs');
+        const contentEl = document.getElementById('content');
+        const treeEl = document.getElementById('tree');
+        const appEl = document.getElementById('app');
+        const toggleExplorerBtn = document.getElementById('toggle-explorer');
+
+        const openFiles = new Map(); // file -> tabEl
+
+        function openFile(file) {
+            // show existing
+            if (openFiles.has(file)) { activateTab(file); return; }
+
+            // create tab
+            const tab = document.createElement('div');
+            tab.className = 'tab';
+            tab.dataset.file = file;
+            tab.innerHTML = `<span>${file}</span> <span class="x" title="Close">×</span>`;
+            tabsEl.appendChild(tab);
+
+            // bind tab click
+            tab.addEventListener('click', (e) => {
+                if (e.target.classList.contains('x')) closeTab(file);
+                else activateTab(file);
+            });
+
+            openFiles.set(file, tab);
+            activateTab(file);
+        }
+
+        function activateTab(file) {
+            // tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.file === file));
+            // panes
+            document.querySelectorAll('.pane').forEach(p => p.classList.toggle('active', p.dataset.file === file));
+            // remember last
+            //localStorage.setItem('lastFile', file);
+        }
+
+        function closeTab(file) {
+            const tab = openFiles.get(file);
+            if (!tab) return;
+            const isActive = tab.classList.contains('active');
+            tab.remove();
+            openFiles.delete(file);
+            // hide pane if not in any other open tab
+            if (isActive) {
+                const remaining = [...openFiles.keys()];
+                activateTab(remaining[remaining.length - 1] || null);
+                if (!remaining.length) {
+                    // if nothing open, deactivate all panes
+                    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+                }
+            }
+        }
+
+        // tree clicks
+        treeEl.addEventListener('click', (e) => {
+            const el = e.target.closest('.item');
+            if (!el) return;
+            openFile(el.dataset.file);
+        });
+
+        // restore last opened file
+        const last = localStorage.getItem('lastFile');
+        if (last) {
+            openFile(last);
+        } else {
+            activateTab("__welcome__"); // sadece welcome aktif olsun
+        }
+
+        // fake form submit
+        const form = document.getElementById('contact-form');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const data = Object.fromEntries(new FormData(form).entries());
+                document.getElementById('form-status').textContent = 'Gönderildi (demo) ⇒ ' + JSON.stringify(data);
+                form.reset();
+            });
+        }
+
+        // mobile explorer toggle
+        toggleExplorerBtn.addEventListener('click', () => {
+            appEl.classList.toggle('show-explorer');
+        });
+
+        // middle-click to close tab (desktop nicety)
+        tabsEl.addEventListener('auxclick', (e) => {
+            const tab = e.target.closest('.tab');
+            if (e.button === 1 && tab) {
+                closeTab(tab.dataset.file);
+            }
+        });
+
+        // open file via hash, e.g. /#projects.ts
+        window.addEventListener('hashchange', () => {
+            const file = location.hash.slice(1);
+            if (file) openFile(file);
+        });
+    </script>
+</body>
+
+</html>
