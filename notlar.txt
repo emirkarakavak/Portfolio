@@ -1,0 +1,33 @@
+const fs = require('fs');
+const xml2js = require('xml2js');
+
+fs.readFile('oyuneks.xml', (err, data) => {
+    if (err) throw err;
+
+    const parser = new xml2js.Parser({ explicitArray: false });
+    parser.parseString(data, (err, result) => {
+        if (err) throw err;
+
+        const items = result.rss.channel.item;
+        const arr = Array.isArray(items) ? items : [items];
+
+        const pubgItems = arr
+            .filter(item => item['g:brand'] === 'PUBG Mobile')
+            .map(item => ({
+                brand: item['g:brand'],
+                title: item['g:title'],
+                price: item['g:price']
+            }));
+
+        const mlbbItems = arr
+            .filter(item => item['g:brand'] === 'Mobile Legends')
+            .map(item => ({
+                brand: item['g:brand'],
+                title: item['g:title'],
+                price: item['g:price']
+            }));
+        console.log(pubgItems);
+
+        console.log(mlbbItems);
+    });
+});
