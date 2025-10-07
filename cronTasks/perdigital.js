@@ -117,6 +117,8 @@ exports.run = async (tasks = []) => {
             .replace(/\s*(₺|TL|TRY|\$|€|£)\s*$/i, "")
             .replace(/\s*\d[\d .]*(?:[.,]\d{2})?\s*(₺|TL|TRY|\$|€|£)?$/i, "")
             .replace(/\s{2,}/g, " ")
+            .replace("Ürün Fiyatı Seç ,","")
+            .replace(" ( Lütfen Ürün karşılığını okuyunuz. )","")
             .trim();
           // sondaki "1," / "3," gibi kısa numara kırıntısı varsa at
           name = name.replace(/\s*\b\d{1,2},?$/, "");
