@@ -1,322 +1,301 @@
 <!doctype html>
 <html lang="tr">
-	<head>
-		<meta charset="utf-8">
-		<title>E-Pin Fiyatları (TR & Global)</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-		<style>
-			body {
-				background: #0f172a;
-			}
-			.card {
-				border: none;
-			}
-			.price {
-				font-variant-numeric: tabular-nums;
-			}
-			.nav-tabs,
-			.nav-pills {
-				flex-wrap: wrap;
-			}
-			.nav-tabs .nav-link,
-			.nav-pills .nav-link {
-				margin-bottom: 0.5rem;
-			}
-			.product-row {
-				cursor: pointer;
-			}
-			.product-row:hover {
-				background: rgba(255, 255, 255, 0.04);
-			}
-			#priceChart {
-			max-height: 400px;   /* grafiğin yüksekliğini kısar */
-			}
-		</style>
-	</head>
-	<body class="text-light">
-		<div class="container py-4">
-			<div class="row justify-content-center">
-				<div class="col-12 col-xl-11">
-					<div class="card shadow-lg">
-						<div
-							class="card-body p-0">
+<head>
+  <meta charset="utf-8">
+  <title>E-Pin Fiyatları — Karşılaştırma</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{ background:#0f172a; }
+    .card{ border:none; }
+    .price{ font-variant-numeric: tabular-nums; }
+    .nav-tabs,.nav-pills{ flex-wrap:wrap; }
+    .nav-tabs .nav-link,.nav-pills .nav-link{ margin-bottom:.5rem; }
+    .product-row{ cursor:pointer; }
+    .product-row:hover{ background:rgba(255,255,255,.04); }
+    .best-pill{ font-size:.75rem; }
+    .diff-pos{ color:#16a34a; }  /* Dijipin daha ucuz */
+    .diff-neg{ color:#dc2626; }  /* Rakip daha ucuz */
+    .diff-eq { color:#9ca3af; }  /* Eşit */
+  </style>
+</head>
+<body class="text-light">
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-11">
+      <div class="card shadow-lg">
+        <div class="card-body p-0">
 
-							<!-- Başlık -->
-							<div class="p-4 border-bottom bg-dark text-white rounded-top">
-								<h1 class="h4 mb-1">Ürün Fiyatları</h1>
-								<p class="mb-0 text-white-50">Üstten kategori seç; içeride site sekmeleri arasında gez.</p>
-							</div>
+          <!-- Başlık -->
+          <div class="p-4 border-bottom bg-dark text-white rounded-top">
+            <h1 class="h4 mb-1">Ürün Fiyatları — Karşılaştırma</h1>
+            <p class="mb-0 text-white-50">Kategori seç; tek tabloda Dijipin ile tüm rakipleri kıyasla.</p>
+          </div>
 
-							<!-- ANA KATEGORİ SEKMELERİ + ARAMA -->
-							<div class="d-flex flex-wrap gap-2 align-items-center justify-content-between px-3 pt-3 bg-dark-subtle">
-								<ul class="nav nav-pills mb-0" id="categoryTabs" role="tablist">
-									{% for cat in categories %}
-									<li class="nav-item">
-										<button class="btn btn-outline-danger me-2 {{ loop.first ? 'active' : '' }}" id="{{ cat.id }}-tab" data-bs-toggle="tab" data-bs-target="#{{ cat.id }}" type="button" role="tab">
-										{{ cat.label }}
-										</button>
-									</li>
-									{% endfor %}
-								</ul>
+          <!-- KATEGORİ SEKMESİ + FİLTRELER -->
+          <div class="px-3 pt-3 pb-2 bg-dark-subtle">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <ul class="nav nav-pills mb-0" id="categoryTabs" role="tablist">
+                {% for cat in categories %}
+                <li class="nav-item">
+                  <button class="btn btn-outline-danger me-2 {{ loop.first ? 'active' : '' }}"
+                          id="{{ cat.id }}-tab"
+                          data-bs-toggle="tab"
+                          data-bs-target="#{{ cat.id }}"
+                          type="button" role="tab">
+                    {{ cat.label }}
+                  </button>
+                </li>
+                {% endfor %}
+              </ul>
 
-								<!-- Sağdaki arama kutusu -->
-								<div class="ms-auto">
-									<input id="globalSearch" type="search" class="form-control form-control-sm"
-										placeholder="Ürün ara… (örn: 60 UC)" />
-								</div>
-								</div>
+              <div class="ms-auto d-flex gap-2 flex-wrap">
+                <input id="globalSearch" type="search" class="form-control form-control-sm" placeholder="Ürün ara… (örn: 60 UC)">
+                <select id="whoCheaper" class="form-select form-select-sm" style="min-width:190px">
+                  <option value="">Tümü</option>
+                  <option value="dijipin">Sadece Dijipin daha ucuz</option>
+                  <option value="competitor">Sadece Rakip daha ucuz</option>
+                  <option value="equal">Fiyatlar eşit</option>
+                </select>
+                <div class="input-group input-group-sm" style="width:200px">
+                  <span class="input-group-text">Min fark %</span>
+                  <input id="minDiff" type="number" step="0.01" min="0" class="form-control" placeholder="örn 5">
+                </div>
+              </div>
+            </div>
+          </div>
 
-							<div class="tab-content" id="categoryTabsContent">
-								{% for cat in categories %}
-									<div
-										class="tab-pane fade {{ loop.first ? 'show active' : '' }}" id="{{ cat.id }}" role="tabpanel" aria-labelledby="{{ cat.id }}-tab">
+          <!-- İÇERİK -->
+          <div class="tab-content" id="categoryTabsContent">
+            {% for cat in categories %}
+            <div class="tab-pane fade {{ loop.first ? 'show active' : '' }}"
+                 id="{{ cat.id }}" role="tabpanel" aria-labelledby="{{ cat.id }}-tab">
 
-										<!-- Şirket sekmeleri -->
-										<ul class="nav nav-tabs px-3 pt-3 bg-body-tertiary" id="{{ cat.id }}-companyTabs" role="tablist">
-											{% for site in cat.sites %}
-												<li class="nav-item">
-													<button class="nav-link {{ loop.first ? 'active' : '' }}" data-bs-toggle="tab" data-bs-target="#{{ cat.id }}-{{ site.id }}" type="button">
-														{{ site.label }}
-													</button>
-												</li>
-											{% endfor %}
-										</ul>
+              <div class="table-responsive bg-body-tertiary">
+                <table class="table table-hover table-borderless align-middle mb-0">
+                  <thead class="table-dark">
+                  <tr id="{{ cat.id }}-head">
+                    <!-- JS dinamik doldurur -->
+                    <th style="width:32%">Ürün</th>
+                    <th class="text-end">Dijipin (₺)</th>
+                    <!-- Rakip kolonları buraya eklenecek -->
+                    <th class="text-end">Fark (%)</th>
+                    <th class="text-end">Etiket</th>
+                  </tr>
+                  </thead>
+                  <tbody id="{{ cat.id }}-body">
+                    <tr><td colspan="4" class="text-center text-muted">Veri hazırlanıyor…</td></tr>
+                  </tbody>
+                </table>
+              </div>
 
-										<div class="tab-content bg-body-tertiary" id="{{ cat.id }}-companyTabsContent">
-											{% for site in cat.sites %}
-												<div class="tab-pane fade {{ loop.first ? 'show active' : '' }}" id="{{ cat.id }}-{{ site.id }}">
-													<div class="table-responsive">
-														<table class="table table-hover table-borderless align-middle mb-0">
-															<thead class="table-dark">
-																<tr>
-																	<th>Ürün</th>
-																	<th class="text-end">TR Fiyatı (₺)</th>
-																	<th class="text-end">Global (₺)</th>
-																</tr>
-															</thead>
-															<tbody>
-																{% if site.rows|length %}
-																	{% for row in site.rows %}
-																		<tr class="product-row" data-name="{{ row.name|e }}" data-site="{{ site.id|e }}">
-																			<td>{{ row.name }}</td>
-																			<td class="text-end price">{{ row.tr ?? '-' }}</td>
-																			<td class="text-end price">{{ row.global ?? '-' }}</td>
-																		</tr>
-																	{% endfor %}
-																{% else %}
-																	<tr>
-																		<td colspan="3" class="text-center text-muted">Kayıt yok</td>
-																	</tr>
-																{% endif %}
-															</tbody>
-														</table>
-													</div>
-												</div>
-											{% endfor %}
-										</div>
-									</div>
-								{% endfor %}
-							</div>
+            </div>
+            {% endfor %}
+          </div>
 
-							<div class="p-3 bg-dark text-white-50 rounded-bottom">
-								<small>//</small>
-							</div>
+          <div class="p-3 bg-dark text-white-50 rounded-bottom">
+            <small>Fark % = (min rakip − Dijipin) / min rakip × 100 • Pozitifse Dijipin daha ucuz</small>
+          </div>
 
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="modal fade" id="priceModal" tabindex="-1" aria-hidden="true">
-			<div class="modal-dialog modal-lg modal-dialog-centered">
-				<div class="modal-content bg-dark text-light">
-					<div class="modal-header border-0">
-						<h5 class="modal-title" id="priceModalTitle">Fiyat Geçmişi</h5>
-						<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-					</div>
-<div class="modal-body">
-  <div class="row mb-3">
-    <div class="col">
-      <label for="startDate" class="form-label">Başlangıç</label>
-      <input type="date" class="form-control" id="startDate">
-    </div>
-    <div class="col">
-      <label for="endDate" class="form-label">Bitiş</label>
-      <input type="date" class="form-control" id="endDate">
-    </div>
-    <div class="col-auto d-flex align-items-end">
-      <button class="btn btn-danger" id="filterBtn">Filtrele</button>
+        </div>
+      </div>
     </div>
   </div>
-
-  <canvas id="priceChart" height="120"></canvas>
-  <div id="priceEmpty" class="text-center text-muted d-none">Kayıt yok</div>
 </div>
-				</div>
-			</div>
-		</div>
 
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<!-- JSON verisi: ESCAPE ETME, RAW BAS -->
+<script id="cat-data" type="application/json">{{ categoriesJson|raw }}</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const rows    = document.querySelectorAll('.product-row');
-  const modalEl = document.getElementById('priceModal');
-  const titleEl = document.getElementById('priceModalTitle');
-  const emptyEl = document.getElementById('priceEmpty');
-  const ctx     = document.getElementById('priceChart').getContext('2d');
-  const filterBtn = document.getElementById('filterBtn');
-  let chart;
-
-async function fetchPrices(name, start, end, siteId) {
-  const params = new URLSearchParams();
-  if (start)  params.append('start', start);
-  if (end)    params.append('end', end);
-  if (siteId) params.append('siteId', siteId);   // <--- eklendi
-
-  const url = `/items/${encodeURIComponent(name)}/prices?` + params.toString();
-  const res = await fetch(url, { headers: { 'Accept': 'application/json' }});
-  if (!res.ok) throw new Error('API hata: ' + res.status);
-  return res.json();
+/* ---------- helpers ---------- */
+const norm = s => (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+function toNumberTRorUS(p){
+  let x = String(p ?? '').replace(/[^\d.,-]/g,'').trim();
+  if(!x) return null;
+  if(/,(\d{2})$/.test(x)) x = x.replace(/\./g,'').replace(',', '.');
+  else if(/\.(\d{2})$/.test(x) && /,\d{3}/.test(x)) x = x.replace(/,/g, '');
+  const v = parseFloat(x);
+  return Number.isFinite(v) ? v : null;
 }
+function fmt(n){ return n==null ? '-' : new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n); }
 
-  function drawChart(payload) {
-    const { labels, datasets } = payload;
-    if (chart) chart.destroy();
+/* ---------- render ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+  let cats = [];
+  try { cats = JSON.parse(document.getElementById('cat-data').textContent || '[]'); }
+  catch(e){ console.error('categoriesJson parse hata:', e); return; }
 
-    if (!datasets || !datasets.length || !labels || !labels.length) {
-      emptyEl.classList.remove('d-none');
-      return;
+  // Kategori sekmeleri zaten Twig'den geliyor, biz sadece tabloları dolduracağız
+  cats.forEach(cat => renderCategory(cat));
+
+  // filtreler
+  const searchInput=document.getElementById('globalSearch');
+  const whoSel=document.getElementById('whoCheaper');
+  const minDiff=document.getElementById('minDiff');
+
+  function applyFilters(){
+    const q=norm(searchInput.value);
+    const who=whoSel.value; // '', 'dijipin', 'competitor', 'equal'
+    const minp=parseFloat(minDiff.value);
+    const activePane=document.querySelector('.tab-pane.show.active');
+    if(!activePane) return;
+    const tbody=activePane.querySelector('tbody');
+    const rows=tbody.querySelectorAll('tr.product-row');
+    rows.forEach(tr=>{
+      const name=norm(tr.dataset.name);
+      const cheaper=tr.dataset.cheaper||'';
+      const diff=parseFloat(tr.dataset.diff||'NaN');
+      let show=true;
+      if(q && !name.includes(q)) show=false;
+      if(who && cheaper!==who) show=false;
+      if(!Number.isNaN(minp) && !(diff>=minp)) show=false;
+      tr.style.display=show?'':'none';
+    });
+    // Kayıt yok satırı
+    const visible=Array.from(rows).some(tr=>tr.style.display!=='none');
+    let empty=tbody.querySelector('tr.__empty');
+    if(!visible){
+      if(!empty){ empty=document.createElement('tr'); empty.className='__empty';
+        empty.innerHTML='<td colspan="'+(activePane.querySelectorAll('thead th').length)+'" class="text-center text-muted">Kayıt yok</td>';
+        tbody.appendChild(empty);
+      }
+    } else if(empty) empty.remove();
+  }
+  searchInput.addEventListener('input', applyFilters);
+  whoSel.addEventListener('change', applyFilters);
+  minDiff.addEventListener('input', applyFilters);
+  document.querySelectorAll('#categoryTabs [data-bs-toggle="tab"]').forEach(btn=>{
+    btn.addEventListener('shown.bs.tab', applyFilters);
+  });
+  applyFilters();
+});
+
+/* ---------- tek kategori render ---------- */
+function renderCategory(cat){
+  const pane = document.getElementById(cat.id);
+  if(!pane){ console.warn('pane yok:', cat.id); return; }
+
+  const sites = cat.sites || [];
+  const dijipin = sites.find(s => /dijipin/i.test(s.id) || /dijipin/i.test(s.label));
+  const competitors = sites.filter(s => s !== dijipin); // SINIRSIZ
+
+  // thead'i dinamik kur
+  const theadRow = pane.querySelector('thead tr');
+  theadRow.innerHTML = `
+    <th style="width:32%">Ürün</th>
+    <th class="text-end">Dijipin (₺)</th>
+  `;
+  for(const comp of competitors){
+    const th=document.createElement('th');
+    th.className='text-end';
+    th.textContent=(comp.label || 'Rakip') + ' (₺)';
+    theadRow.appendChild(th);
+  }
+  theadRow.insertAdjacentHTML('beforeend', `
+    <th class="text-end">Fark (%)</th>
+    <th class="text-end">Etiket</th>
+  `);
+
+  // ürün haritası: { name, dijipin, comps: Map(siteId -> {label,val}) }
+  const map = new Map();
+
+  function upsertRow(siteObj, which){
+    (siteObj?.rows || []).forEach(r=>{
+      const key = r.name; if(!key) return;
+      const priceStr = r.tr ?? r.global ?? r.price ?? null;
+      const val = toNumberTRorUS(priceStr);
+      if(val==null) return;
+
+      const rec = map.get(key) || { name:key, dijipin:null, comps:new Map() };
+      if(which==='dijipin') rec.dijipin = val;
+      else rec.comps.set(siteObj.id, { label: siteObj.label, val });
+      map.set(key, rec);
+    });
+  }
+  if(dijipin) upsertRow(dijipin, 'dijipin');
+  for(const comp of competitors) upsertRow(comp, 'comp');
+
+  // satırları yaz
+  const tbody = pane.querySelector('tbody');
+  tbody.innerHTML='';
+  const rows = Array.from(map.values()).sort((a,b)=> a.name.localeCompare(b.name,'tr'));
+
+  for(const r of rows){
+    const allPairs = [];
+    if(r.dijipin!=null) allPairs.push(['__dijipin__', r.dijipin]);
+    for(const [sid,obj] of r.comps) allPairs.push([sid, obj.val]);
+    if(!allPairs.length) continue;
+
+    const minVal = Math.min(...allPairs.map(p=>p[1]));
+    const bestKeys = new Set(allPairs.filter(p=>p[1]===minVal).map(p=>p[0]));
+
+    // fark% = (minCompetitor − dijipin)/minCompetitor*100  (rakip varsa)
+    const compVals = Array.from(r.comps.values()).map(x=>x.val);
+    let diffPct=null, cheaper='equal';
+    if(compVals.length && r.dijipin!=null){
+      const minComp=Math.min(...compVals);
+      diffPct=((minComp - r.dijipin)/minComp)*100;
+      cheaper=(Math.abs(diffPct)<0.0001)?'equal':(diffPct>0?'dijipin':'competitor');
+    } else if(r.dijipin!=null){ cheaper='dijipin'; }
+      else { cheaper='competitor'; }
+
+    const tr=document.createElement('tr');
+    tr.className='product-row';
+    tr.dataset.name=r.name;
+    tr.dataset.cheaper=cheaper;
+    tr.dataset.diff=(diffPct==null?'':diffPct.toFixed(2));
+
+    // Ürün
+    const tdName=document.createElement('td'); tdName.textContent=r.name; tr.appendChild(tdName);
+
+    // Dijipin
+    const tdD=document.createElement('td'); tdD.className='text-end price';
+    tdD.textContent=(r.dijipin==null?'-':fmt(r.dijipin));
+    if(bestKeys.has('__dijipin__')) tdD.insertAdjacentHTML('beforeend',' <span class="badge bg-success-subtle text-success border border-success-subtle ms-2 best-pill">En Uygun</span>');
+    tr.appendChild(tdD);
+
+    // Rakipler
+    for(const comp of competitors){
+      const cell=document.createElement('td'); cell.className='text-end price';
+      const v=r.comps.get(comp.id)?.val;
+      cell.textContent=(v==null?'-':fmt(v));
+      if(bestKeys.has(comp.id)) cell.insertAdjacentHTML('beforeend',' <span class="badge bg-success-subtle text-success border border-success-subtle ms-2 best-pill">En Uygun</span>');
+      tr.appendChild(cell);
     }
-    emptyEl.classList.add('d-none');
 
-    // Chart.js dataset formatına çevir (renkleri Chart.js seçsin)
-    const cjDatasets = datasets.map(ds => ({
-      label: `${ds.label} (${ds.currency || '₺'})`,
-      data: ds.data,
-      tension: 0.2,
-      pointRadius: 2,
-      borderWidth: 2,
-      spanGaps: true // null günlerde çizgiyi kırma/atla
-    }));
+    // Fark %
+    const tdDiff=document.createElement('td'); tdDiff.className='text-end';
+    if(diffPct==null || !isFinite(diffPct)) tdDiff.innerHTML='<span class="text-muted">-</span>';
+    else {
+      const cls=diffPct>0?'diff-pos':(diffPct<0?'diff-neg':'diff-eq');
+      const sign=diffPct>0?'+':'';
+      tdDiff.innerHTML=`<span class="${cls}">${sign}${Number(diffPct).toFixed(2)}%</span>`;
+    }
+    tr.appendChild(tdDiff);
 
-    chart = new Chart(ctx, {
-      type: 'line',
-      data: { labels, datasets: cjDatasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: { ticks: { maxRotation: 0 } },
-          y: { beginAtZero: false }
-        },
-        interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { display: true } }
-      }
-    });
+    // Etiket
+    const tdTag=document.createElement('td'); tdTag.className='text-end';
+    let who;
+    if(bestKeys.has('__dijipin__')) who='Dijipin';
+    else {
+      const firstBest=[...bestKeys][0];
+      who = competitors.find(c=>c.id===firstBest)?.label || 'Rakip';
+    }
+    tdTag.innerHTML = `<span class="badge ${bestKeys.has('__dijipin__') ? 'bg-success' : 'bg-primary'}">${who} en uygun</span>`;
+    tr.appendChild(tdTag);
+
+    tbody.appendChild(tr);
   }
 
-const openModalAndLoad = async (name, siteId) => {
-  titleEl.textContent = `Fiyat Geçmişi — ${name}`;
-  document.getElementById('startDate').value = '';
-  document.getElementById('endDate').value   = '';
-
-  const modal = new bootstrap.Modal(modalEl);
-  modal.show();
-
-  try {
-    const payload = await fetchPrices(name, undefined, undefined, siteId); // <---
-    drawChart(payload);
-    modalEl.dataset.itemName = name;
-    if (siteId) modalEl.dataset.siteId = siteId; else delete modalEl.dataset.siteId; // <---
-  } catch (e) {
-    console.error(e);
-    emptyEl.textContent = 'Veri alınamadı';
-    emptyEl.classList.remove('d-none');
-    if (chart) chart.destroy();
+  // Boşsa "kayıt yok"
+  if(!tbody.children.length){
+    const cols = pane.querySelectorAll('thead th').length;
+    const tr=document.createElement('tr'); tr.className='__empty';
+    tr.innerHTML = `<td colspan="${cols}" class="text-center text-muted">Kayıt yok</td>`;
+    tbody.appendChild(tr);
   }
-};
-
-  // Satır tıklama
-document.querySelectorAll('.product-row').forEach(tr => {
-  tr.addEventListener('click', () =>
-    openModalAndLoad(tr.getAttribute('data-name'), tr.getAttribute('data-site')) // <---
-  );
-});
-
-  // Modal kapanınca temizle
-  modalEl.addEventListener('hidden.bs.modal', () => {
-    if (chart) { chart.destroy(); chart = null; }
-    emptyEl.classList.add('d-none');
-    emptyEl.textContent = 'Kayıt yok';
-  });
-
-  // Filtre butonu
-filterBtn.addEventListener('click', async () => {
-  const start = document.getElementById('startDate').value;
-  const end   = document.getElementById('endDate').value;
-  const name  = modalEl.dataset.itemName;
-  const siteId = modalEl.dataset.siteId || null; // <---
-
-  if (!name) return;
-  try {
-    const payload = await fetchPrices(name, start, end, siteId); // <---
-    drawChart(payload);
-  } catch (e) {
-    console.error(e);
-  }
-});
-});
-
-  const searchInput = document.getElementById('globalSearch');
-
-  const normalize = s =>
-    (s || '')
-      .toString()
-      .toLowerCase()
-      .normalize('NFD')            // aksan/şapka vs.
-      .replace(/[\u0300-\u036f]/g,'');
-
-  function updateEmptyRows() {
-    // Her tablo gövdesi için "Kayıt yok" satırını yönet
-    document.querySelectorAll('table tbody').forEach(tbody => {
-      const rows = Array.from(tbody.querySelectorAll('tr.product-row'));
-      const hasVisible = rows.some(tr => tr.style.display !== 'none');
-      let empty = tbody.querySelector('tr.__empty');
-      if (!hasVisible) {
-        if (!empty) {
-          empty = document.createElement('tr');
-          empty.className = '__empty';
-          empty.innerHTML = `<td colspan="3" class="text-center text-muted">Kayıt yok</td>`;
-          tbody.appendChild(empty);
-        }
-      } else {
-        if (empty) empty.remove();
-      }
-    });
-  }
-
-  function applyFilter(q) {
-    const nq = normalize(q);
-    const allRows = document.querySelectorAll('.product-row');
-    allRows.forEach(tr => {
-      // Ürün adı + site kimliği içinde ara (daha esnek olsun)
-      const name = tr.getAttribute('data-name') || tr.cells[0]?.textContent || '';
-      const site = tr.getAttribute('data-site') || '';
-      const hay  = normalize(name + ' ' + site);
-      tr.style.display = nq && !hay.includes(nq) ? 'none' : '';
-    });
-    updateEmptyRows();
-  }
-
-  searchInput.addEventListener('input', e => {
-    applyFilter(e.target.value.trim());
-  });
-
-  // Sayfa ilk yüklendiğinde boş filtre uygulayıp "Kayıt yok" satırlarını doğru başlat
-  applyFilter('');
+}
 </script>
-
-	</body>
+</body>
 </html>
