@@ -79,71 +79,63 @@ exports.run = async (input, categoryName) => {
       // Senin verdiğin yapıya göre: her ürün bir `.table-container`
       await page.waitForSelector(".table-container", { timeout: 30000 }).catch(() => {});
       const items = await page.evaluate(() => {
-  const norm = (s) => (s || "").replace(/\s+/g, " ").trim();
+        const norm = (s) => (s || "").replace(/\s+/g, " ").trim();
 
-  const CARD_SEL = ".table-container";
-  // nth-child yerine nth-of-type
-  const NAME_REL  = "div:nth-of-type(2) > a:nth-of-type(1) > p:nth-of-type(1)";
-  const PRICE_REL = "div:nth-of-type(5) > p:nth-of-type(2)";
+        const CARD_SEL = ".table-container";
+        // nth-child yerine nth-of-type
+        const NAME_REL  = "div:nth-of-type(2) > a:nth-of-type(1) > p:nth-of-type(1)";
+        const PRICE_REL = "div:nth-of-type(5) > p:nth-of-type(2)";
 
-  // fiyat regex: 31,976.99 veya 397.49 veya 1.234,56 TL … vs.
-  const priceRes = [
-    /\b\d{1,3}(?:,\d{3})+\.\d{2}\b/g, // 31,976.99
-    /\b\d+\.\d{2}\b/g,               // 397.49
-    /\b\d{1,3}(?:\.\d{3})+,\d{2}\b/g,// 1.234,56
-    /\b\d+,\d{2}\b/g                 // 49,99
-  ];
-
-  const getPrices = (txt) => {
-    const out = new Set();
-    for (const re of priceRes) {
-      let m; while ((m = re.exec(txt)) !== null) out.add(m[0]);
-    }
-    return Array.from(out);
-  };
-
-  const cards = Array.from(document.querySelectorAll(CARD_SEL));
-  const out = [];
-
-  for (const card of cards) {
-    // 1) Önce verilen relative selectorlarla dene
-    let nameEl  = card.querySelector(NAME_REL);
-    let priceEl = card.querySelector(PRICE_REL);
-
-    let title = nameEl ? norm(nameEl.textContent || "") : "";
-    let priceText = priceEl ? norm(priceEl.textContent || "") : "";
-
-    // 2) Fallback: title boşsa kart içindeki makul ilk satırı al
-    if (!title) {
-      // genelde isim, link içindeki ilk <p> veya <a>’daki kalın metin
-      const titleCand = card.querySelector("a p, a, .product-title, .font-bold");
-      if (titleCand) title = norm(titleCand.textContent || "");
-    }
-
-    // 3) Fallback: priceText boşsa kartın TÜM metnini tara, en düşük fiyatı seç
-    if (!priceText) {
-      const allText = norm(card.innerText || card.textContent || "");
-      const prices = getPrices(allText);
-      if (prices.length) {
-        // en küçük olanı seç
-        const toNum = (s) => {
-          // "31,976.99" -> 31976.99, "1.234,56" -> 1234.56
-          let x = s.replace(/[^\d.,]/g, "");
-          if (/,/.test(x) && /\.\d{2}$/.test(x)) x = x.replace(/,/g, ""); // binlik virgülü at
-          else if (/\d+,\d{2}$/.test(x)) x = x.replace(/\./g, "").replace(",", "."); // TR format
-          const v = parseFloat(x);
-          return Number.isFinite(v) ? v : NaN;
+        // Fiyatı öncelik sırasıyla *tek* kez seç (alt-match'leri ele)
+        // 1) 31,976.99   2) 397.49   3) 1.234,56   4) 49,99
+        const pricePatterns = [
+          /\b\d{1,3}(?:,\d{3})+\.\d{2}\b/g,   // 31,976.99
+          /\b\d+\.\d{2}\b/g,                  // 397.49
+          /\b\d{1,3}(?:\.\d{3})+,\d{2}\b/g,   // 1.234,56
+          /\b\d+,\d{2}\b/g                    // 49,99
+        ];
+        const pickPriceByPriority = (txt) => {
+          for (const re of pricePatterns) {
+            const matches = txt.match(re);
+            if (matches && matches.length) {
+              // aynı pattern içinden en "tam" olanı seçmek için en uzununu al
+              matches.sort((a, b) => b.length - a.length);
+              return matches[0];
+            }
+          }
+          return "";
         };
-        prices.sort((a,b)=>toNum(a)-toNum(b));
-        priceText = prices[0];
-      }
-    }
 
-    if (title && priceText) out.push({ title, priceText });
-  }
+        const cards = Array.from(document.querySelectorAll(CARD_SEL));
+        const out = [];
 
-  return out;
-});
+        for (const card of cards) {
+          // 1) Önce verilen relative selectorlarla dene
+          let nameEl  = card.querySelector(NAME_REL);
+          let priceEl = card.querySelector(PRICE_REL);
+
+          let title = nameEl ? norm(nameEl.textContent || "") : "";
+          let priceText = priceEl ? norm(priceEl.textContent || "") : "";
+
+          // 2) Fallback: title boşsa kart içindeki makul ilk satırı al
+          if (!title) {
+            // genelde isim, link içindeki ilk <p> veya <a>’daki kalın metin
+            const titleCand = card.querySelector("a p, a, .product-title, .font-bold");
+            if (titleCand) title = norm(titleCand.textContent || "");
+          }
+
+          // 3) Fallback: priceText boşsa kartın TÜM metnini tara, öncelikli eşleşme seç
+          if (!priceText) {
+            const allText = norm(card.innerText || card.textContent || "");
+            const best = pickPriceByPriority(allText);
+            if (best) priceText = best;
+          }
+
+          if (title && priceText) out.push({ title, priceText });
+        }
+
+        return out;
+      });
 
       if (!items || items.length === 0) {
         console.warn(`Hiç ürün bulunamadı (selectorlar ile): ${url}`);
@@ -153,10 +145,8 @@ exports.run = async (input, categoryName) => {
       for (const it of items) {
         // Ör: "397.49 TL" / "₺397.49"
         const sellPriceValue = priceTextToNumber(it.priceText);
-        const sellPriceStr = it.priceText.replace(/[^\d.,]/g, "").replace(/,/g, (m, i, s) => {
-          // sadece binlik virgül varsa atıldı; burada sabit bırakıyoruz
-          return ",";
-        }) || String(sellPriceValue ?? "");
+        // Kaynak metin formatını koru; sadece para sembolü vs. temizle
+        const sellPriceStr = it.priceText.replace(/[^\d.,]/g, "") || String(sellPriceValue ?? "");
 
         try {
           await upsertAndArchive(
@@ -164,7 +154,7 @@ exports.run = async (input, categoryName) => {
               siteName: "foxepin",
               categoryName,
               itemName: norm(it.title),
-              sellPrice: sellPriceStr,          // "397.49" (rakamları bıraktım)
+              sellPrice: sellPriceStr,          // "397.49" / "1,389.99" / "49,99" (kaynak format)
               sellPriceValue: sellPriceValue,   // 397.49
               currency: "₺",
               url,

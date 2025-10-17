@@ -6,21 +6,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body{ background:#0f172a; }
+    :root{
+      --bg-deep:#0f172a;          /* sayfa zemini */
+     /* --bg-table:#0b1224;          sticky left hücre zemini */ 
+      --bar-track:#1f2937;        /* diff bar track */
+      --price-cols: 4;            /* JS ile güncellenecek: Dijipin + rakip sayısı */
+    }
+    body{ background:var(--bg-deep); }
     .card{ border:none; }
     .price{ font-variant-numeric: tabular-nums; }
     .nav-tabs,.nav-pills{ flex-wrap:wrap; }
     .nav-tabs .nav-link,.nav-pills .nav-link{ margin-bottom:.5rem; }
-    .product-row{ cursor:pointer; }
-    .product-row:hover{ background:rgba(255,255,255,.04); }
-    .best-pill{ font-size:.75rem; }
+    .product-row{ cursor:pointer; transition: background .15s, box-shadow .15s; }
+    .product-row:hover{ background:rgba(255,255,255,.04); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+    .best-pill{ font-size:.72rem; letter-spacing:.01em; }
     .diff-pos{ color:#16a34a; }  /* Dijipin daha ucuz */
     .diff-neg{ color:#dc2626; }  /* Rakip daha ucuz */
     .diff-eq { color:#9ca3af; }  /* Eşit */
+
+    /* --- sticky başlık + ilk sütun --- */
+    .table-sticky thead th {
+      position: sticky; top: 0; z-index: 3;
+    }
+    .table-sticky tbody td:first-child,
+    .table-sticky thead th:first-child{
+      position: sticky; left: 0; z-index: 2;
+      background: var(--bg-table);
+    }
+
+    /* --- fixed layout + ellipsis sadece BAŞLIKLARDA --- */
+    .table.table-fixed { table-layout: fixed; }
+    .table.table-fixed thead th {
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;
+    }
+
+    /* Ürün sütunu: harf harf kırma yok, kelimeye göre sar */
+    .col-name {
+      width:28%; min-width:220px;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .col-price{ width:9rem; }
+    .col-diff { width:9rem; }
+    .col-tag  { width:10rem; }
+
+    /* tablo enini minimumda tut, kalanını yatay scroll'a bırak */
+    .table-sticky.table-fixed{
+      min-width: calc(520px + var(--price-cols) * 9rem); /* 520 ~ ürün+diff+etiket, 9rem fiyat kolonu */
+    }
+
+    /* başlık görselliği */
+    .table-dark { background: rgba(15,23,42,.85)!important; backdrop-filter: blur(6px); }
+
+    /* en uygun hücre vurgusu */
+    .cell-best{
+      background: linear-gradient(0deg, rgba(34,197,94,.12), rgba(34,197,94,.12));
+    }
+
+    /* diff bar */
+    .diff-wrap { display:flex; align-items:center; gap:.5rem; justify-content:flex-end; }
+    .diff-bar  { height:6px; width:70px; border-radius:3px; background:var(--bar-track); overflow:hidden; }
+    .diff-bar > i { display:block; height:100%; }
+
+    /* sıralanabilir başlık görseli */
+    .th-sort{ cursor:pointer; user-select:none; }
+    .th-sort::after{ content:'⇅'; opacity:.55; margin-left:.25rem; font-size:.85em; }
+    .th-sort[data-dir="asc"]::after { content:'↑'; }
+    .th-sort[data-dir="desc"]::after{ content:'↓'; }
+
+    /* skeleton loader */
+    .skel {
+      height: 1.25rem; border-radius:4px;
+      background: linear-gradient(90deg, #1f2937 25%, #374151 37%, #1f2937 63%);
+      background-size: 400% 100%; animation: skel 1.2s ease infinite;
+    }
+    @keyframes skel { 0%{background-position:100% 0} 100%{background-position:0 0} }
+
+    @media (max-width: 768px){
+      .col-name { min-width:160px; }
+      .col-price{ width:7.5rem; }
+      .col-diff { width:7.5rem; }
+      .col-tag  { width:8.5rem; }
+      .table.table-fixed thead th{ max-width: 120px; }
+    }
   </style>
 </head>
 <body class="text-light">
-<div class="container py-4">
+<div class="container-fluid py-4">
   <div class="row justify-content-center">
     <div class="col-12 col-xl-11">
       <div class="card shadow-lg">
@@ -72,19 +146,19 @@
                  id="{{ cat.id }}" role="tabpanel" aria-labelledby="{{ cat.id }}-tab">
 
               <div class="table-responsive bg-body-tertiary">
-                <table class="table table-hover table-borderless align-middle mb-0">
-                  <thead class="table-dark">
+                <table class="table table-hover table-borderless align-middle mb-0 table-sticky table-fixed">
+                  <thead class="">
                   <tr id="{{ cat.id }}-head">
                     <!-- JS dinamik doldurur -->
-                    <th style="width:32%">Ürün</th>
-                    <th class="text-end">Dijipin (₺)</th>
+                    <th class="col-name">Ürün</th>
+                    <th class="text-end col-price th-sort" data-sort="dijipin" title="Dijipin (₺)">Dijipin (₺)</th>
                     <!-- Rakip kolonları buraya eklenecek -->
-                    <th class="text-end">Fark (%)</th>
-                    <th class="text-end">Etiket</th>
+                    <th class="text-end col-diff th-sort" data-sort="diff">Fark (%)</th>
+                    <th class="text-end col-tag">Etiket</th>
                   </tr>
                   </thead>
                   <tbody id="{{ cat.id }}-body">
-                    <tr><td colspan="4" class="text-center text-muted">Veri hazırlanıyor…</td></tr>
+                    <tr><td colspan="4"><div class="skel"></div></td></tr>
                   </tbody>
                 </table>
               </div>
@@ -106,16 +180,39 @@
 <!-- JSON verisi: ESCAPE ETME, RAW BAS -->
 <script id="cat-data" type="application/json">{{ categoriesJson|raw }}</script>
 
+<!-- Modal: Tüm fiyatlar -->
+<div class="modal fade" id="allPricesModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
+    <div class="modal-content bg-dark text-light">
+      <div class="modal-header">
+        <h5 class="modal-title">Tüm fiyatlar</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="allPricesBody"></div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 /* ---------- helpers ---------- */
 const norm = s => (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+
 function toNumberTRorUS(p){
   let x = String(p ?? '').replace(/[^\d.,-]/g,'').trim();
   if(!x) return null;
-  if(/,(\d{2})$/.test(x)) x = x.replace(/\./g,'').replace(',', '.');
-  else if(/\.(\d{2})$/.test(x) && /,\d{3}/.test(x)) x = x.replace(/,/g, '');
-  const v = parseFloat(x);
+  if(/,\d{2}$/.test(x)){ x = x.replace(/\./g, ''); x = x.replace(/,/g, '.'); }
+  else if(/\.\d{2}$/.test(x)){ x = x.replace(/,/g, ''); }
+  else {
+    const lastComma = x.lastIndexOf(','), lastDot = x.lastIndexOf('.');
+    const i = Math.max(lastComma, lastDot);
+    if(i > -1){
+      const intPart  = x.slice(0, i).replace(/[.,]/g, '');
+      const fracPart = x.slice(i+1).replace(/[^\d]/g, '');
+      x = intPart + (fracPart ? '.' + fracPart : '');
+    }
+  }
+  const v = Number(x);
   return Number.isFinite(v) ? v : null;
 }
 function fmt(n){ return n==null ? '-' : new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n); }
@@ -126,7 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
   try { cats = JSON.parse(document.getElementById('cat-data').textContent || '[]'); }
   catch(e){ console.error('categoriesJson parse hata:', e); return; }
 
-  // Kategori sekmeleri zaten Twig'den geliyor, biz sadece tabloları dolduracağız
   cats.forEach(cat => renderCategory(cat));
 
   // filtreler
@@ -136,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function applyFilters(){
     const q=norm(searchInput.value);
-    const who=whoSel.value; // '', 'dijipin', 'competitor', 'equal'
+    const who=whoSel.value;
     const minp=parseFloat(minDiff.value);
     const activePane=document.querySelector('.tab-pane.show.active');
     if(!activePane) return;
@@ -152,12 +248,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!Number.isNaN(minp) && !(diff>=minp)) show=false;
       tr.style.display=show?'':'none';
     });
-    // Kayıt yok satırı
     const visible=Array.from(rows).some(tr=>tr.style.display!=='none');
     let empty=tbody.querySelector('tr.__empty');
+    const cols = activePane.querySelectorAll('thead th').length;
     if(!visible){
       if(!empty){ empty=document.createElement('tr'); empty.className='__empty';
-        empty.innerHTML='<td colspan="'+(activePane.querySelectorAll('thead th').length)+'" class="text-center text-muted">Kayıt yok</td>';
+        empty.innerHTML='<td colspan="'+cols+'" class="text-center text-muted">Kayıt yok</td>';
         tbody.appendChild(empty);
       }
     } else if(empty) empty.remove();
@@ -168,6 +264,43 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('#categoryTabs [data-bs-toggle="tab"]').forEach(btn=>{
     btn.addEventListener('shown.bs.tab', applyFilters);
   });
+
+  // başlıklardan sıralama
+  document.addEventListener('click', e=>{
+    const th = e.target.closest('.th-sort'); if(!th) return;
+    const pane = th.closest('.tab-pane'); if(!pane) return;
+    const tbody = pane.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr.product-row'));
+    const headCells = Array.from(pane.querySelectorAll('thead th'));
+    const thIndex = headCells.indexOf(th);
+
+    th.dataset.dir = th.dataset.dir==='asc' ? 'desc' : 'asc';
+    const dir = th.dataset.dir;
+
+    rows.sort((a,b)=>{
+      const parseCell = (row, idx) => {
+        const cell = row.querySelector(`td:nth-child(${idx+1})`);
+        return toNumberTRorUS(cell?.textContent);
+      };
+      let av,bv;
+      if(th.dataset.sort === 'diff'){
+        av = parseFloat(a.dataset.diff||'NaN');
+        bv = parseFloat(b.dataset.diff||'NaN');
+      } else if(th.dataset.sort === 'dijipin'){
+        av = parseCell(a, 1);  // 2. sütun
+        bv = parseCell(b, 1);
+      } else {
+        av = parseCell(a, thIndex);
+        bv = parseCell(b, thIndex);
+      }
+      if(isNaN(av)&&isNaN(bv)) return 0;
+      if(isNaN(av)) return 1;
+      if(isNaN(bv)) return -1;
+      return dir==='asc' ? av-bv : bv-av;
+    });
+    rows.forEach(r=>tbody.appendChild(r));
+  });
+
   applyFilters();
 });
 
@@ -183,19 +316,24 @@ function renderCategory(cat){
   // thead'i dinamik kur
   const theadRow = pane.querySelector('thead tr');
   theadRow.innerHTML = `
-    <th style="width:32%">Ürün</th>
-    <th class="text-end">Dijipin (₺)</th>
+    <th class="col-name">Ürün</th>
+    <th class="text-end col-price th-sort" data-sort="dijipin" title="Dijipin (₺)">Dijipin (₺)</th>
   `;
   for(const comp of competitors){
     const th=document.createElement('th');
-    th.className='text-end';
-    th.textContent=(comp.label || 'Rakip') + ' (₺)';
+    th.className='text-end col-price th-sort';
+    th.textContent=(comp.label || 'Rakip');
+    th.title = (comp.label || 'Rakip');
     theadRow.appendChild(th);
   }
   theadRow.insertAdjacentHTML('beforeend', `
-    <th class="text-end">Fark (%)</th>
-    <th class="text-end">Etiket</th>
+    <th class="text-end col-diff th-sort" data-sort="diff" title="(min rakip − Dijipin) / min rakip × 100">Fark (%)</th>
+    <th class="text-end col-tag">Etiket</th>
   `);
+
+  // >>> burada tabloya price column sayısını bildir (Dijipin + rakipler)
+  const table = pane.querySelector('table');
+  table?.style.setProperty('--price-cols', String(1 + competitors.length));
 
   // ürün haritası: { name, dijipin, comps: Map(siteId -> {label,val}) }
   const map = new Map();
@@ -230,7 +368,7 @@ function renderCategory(cat){
     const minVal = Math.min(...allPairs.map(p=>p[1]));
     const bestKeys = new Set(allPairs.filter(p=>p[1]===minVal).map(p=>p[0]));
 
-    // fark% = (minCompetitor − dijipin)/minCompetitor*100  (rakip varsa)
+    // fark% = (minCompetitor − dijipin)/minCompetitor*100
     const compVals = Array.from(r.comps.values()).map(x=>x.val);
     let diffPct=null, cheaper='equal';
     if(compVals.length && r.dijipin!=null){
@@ -252,7 +390,10 @@ function renderCategory(cat){
     // Dijipin
     const tdD=document.createElement('td'); tdD.className='text-end price';
     tdD.textContent=(r.dijipin==null?'-':fmt(r.dijipin));
-    if(bestKeys.has('__dijipin__')) tdD.insertAdjacentHTML('beforeend',' <span class="badge bg-success-subtle text-success border border-success-subtle ms-2 best-pill">En Uygun</span>');
+    if(bestKeys.has('__dijipin__')){
+      tdD.insertAdjacentHTML('beforeend',' <span class="badge bg-success-subtle text-success border border-success-subtle ms-2 best-pill">En Uygun</span>');
+      tdD.classList.add('cell-best');
+    }
     tr.appendChild(tdD);
 
     // Rakipler
@@ -260,17 +401,26 @@ function renderCategory(cat){
       const cell=document.createElement('td'); cell.className='text-end price';
       const v=r.comps.get(comp.id)?.val;
       cell.textContent=(v==null?'-':fmt(v));
-      if(bestKeys.has(comp.id)) cell.insertAdjacentHTML('beforeend',' <span class="badge bg-success-subtle text-success border border-success-subtle ms-2 best-pill">En Uygun</span>');
+      if(bestKeys.has(comp.id)){
+        cell.insertAdjacentHTML('beforeend',' <span class="badge bg-success-subtle text-success border border-success-subtle ms-2 best-pill">En Uygun</span>');
+        cell.classList.add('cell-best');
+      }
       tr.appendChild(cell);
     }
 
-    // Fark %
+    // Fark % (sayı + mini bar)
     const tdDiff=document.createElement('td'); tdDiff.className='text-end';
-    if(diffPct==null || !isFinite(diffPct)) tdDiff.innerHTML='<span class="text-muted">-</span>';
-    else {
-      const cls=diffPct>0?'diff-pos':(diffPct<0?'diff-neg':'diff-eq');
-      const sign=diffPct>0?'+':'';
-      tdDiff.innerHTML=`<span class="${cls}">${sign}${Number(diffPct).toFixed(2)}%</span>`;
+    if(diffPct==null || !isFinite(diffPct)) {
+      tdDiff.innerHTML='<span class="text-muted">-</span>';
+    } else {
+      const color = diffPct>0 ? '#16a34a' : (diffPct<0 ? '#dc2626' : '#9ca3af');
+      const sign  = diffPct>0?'+':'';
+      const abs   = Math.min(Math.abs(diffPct), 100);
+      tdDiff.innerHTML = `
+        <div class="diff-wrap">
+          <span style="color:${color}">${sign}${Number(diffPct).toFixed(2)}%</span>
+          <span class="diff-bar"><i style="width:${abs}%; background:${color}"></i></span>
+        </div>`;
     }
     tr.appendChild(tdDiff);
 
@@ -284,6 +434,17 @@ function renderCategory(cat){
     }
     tdTag.innerHTML = `<span class="badge ${bestKeys.has('__dijipin__') ? 'bg-success' : 'bg-primary'}">${who} en uygun</span>`;
     tr.appendChild(tdTag);
+
+    // Satır tıkla -> modal
+    tr.addEventListener('click', () => {
+      const list = [];
+      list.push(`<div class="d-flex justify-content-between"><b>Dijipin</b><span>${r.dijipin==null?'-':fmt(r.dijipin)}</span></div>`);
+      for(const [sid,obj] of r.comps){
+        list.push(`<div class="d-flex justify-content-between"><span>${obj.label||sid}</span><span>${fmt(obj.val)}</span></div>`);
+      }
+      document.getElementById('allPricesBody').innerHTML = list.join('');
+      new bootstrap.Modal('#allPricesModal').show();
+    });
 
     tbody.appendChild(tr);
   }

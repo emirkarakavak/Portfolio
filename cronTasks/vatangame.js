@@ -142,7 +142,7 @@ exports.run = async (input, categoryName) => {
             {
               siteName: "vatangame",
               categoryName,
-              itemName: it.title,
+              itemName: it.title.replace(" ( Lütfen Ürün karşılığını okuyunuz. )"," "),
               sellPrice: sellPriceStr,     // "149.90"
               sellPriceValue,
               currency: it.currency,

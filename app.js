@@ -319,17 +319,17 @@ const pipeline = [
     //         { url: "https://www.bynogame.com/tr/oyunlar/whiteout-survival", categoryName: "bynogame-whiteout" },
     //     ]),
     // },
-    // {
-    //     name: "VatanGame",
-    //     run: () => vatangame.run([
-    //         { url: "https://vatangame.com/oyunlar/mobile-legends-bang-bang-elmas", categoryName: "vatangame-mlbb-tr" },
-    //         { url: "https://vatangame.com/oyunlar/global-mobile-legends-bang-bang-elmas", categoryName: "vatangame-mlbb-global" },
-    //         { url: "https://vatangame.com/oyunlar/pubg-mobile-uc-tr", categoryName: "vatangame-pubgm-tr" },
-    //         { url: "https://vatangame.com/oyunlar/age-of-empires-mobile-doruk-parasi", categoryName: "vatangame-aoem" },
-    //         { url: "https://vatangame.com/oyunlar/wartune-ultra", categoryName: "vatangame-wartune" },
-    //         { url: "https://vatangame.com/oyunlar/whiteout-survival-frost-star", categoryName: "vatangame-whiteout" },
-    //     ]),
-    // },
+    {
+        name: "VatanGame",
+        run: () => vatangame.run([
+            { url: "https://vatangame.com/oyunlar/mobile-legends-bang-bang-elmas", categoryName: "vatangame-mlbb-tr" },
+            { url: "https://vatangame.com/oyunlar/mobile-legends-bang-bang-elmas-global", categoryName: "vatangame-mlbb-global" },
+            { url: "https://vatangame.com/oyunlar/pubg-mobile-uc-tr", categoryName: "vatangame-pubgm-tr" },
+            { url: "https://vatangame.com/oyunlar/age-of-empires-mobile-doruk-parasi", categoryName: "vatangame-aoem" },
+            { url: "https://vatangame.com/oyunlar/wartune-ultra", categoryName: "vatangame-wartune" },
+            { url: "https://vatangame.com/oyunlar/whiteout-survival-frost-star", categoryName: "vatangame-whiteout" },
+        ]),
+    },
     // {
     //     name: "FoxEpin",
     //     run: () => foxepin.run([
@@ -341,6 +341,7 @@ const pipeline = [
     //         { url: "https://www.foxepin.com/game/whiteout-survival/whiteout-survival", categoryName: "foxepin-whiteout" },
     //     ]),
     // },
+
     // {
     //     name: "Kabasakal",
     //     run: () => kabasakal.run([
@@ -352,6 +353,7 @@ const pipeline = [
     //         { url: "https://kabasakalonline.com/urunler/1034/whiteout-survival", categoryName: "kabasakal-whiteout" },
     //     ]),
     // },
+    
     // {
     //     name: "BTKGame",
     //     run: () => btkgame.run([
@@ -375,18 +377,18 @@ const pipeline = [
     //         { url: "https://www.vioragame.com/whiteout-survival-frost-star", categoryName: "viora-whiteout" },
     //     ]),
     // },
-    {
-        name: "Dijipin",
-        run: () => dijipin.run([
-            { url: "https://www.dijipin.com/pubg-uc-top-up-turkey-c-165", categoryName: "dijipin-pubgm-tr" },
-            { url: "https://www.dijipin.com/pubg-id-yukleme-global-c-208", categoryName: "dijipin-pubgm-global" },
-            { url: "https://www.dijipin.com/mobile-legends--c-170", categoryName: "dijipin-mlbb-tr" },
-            { url: "https://www.dijipin.com/age-of-empires-mobile-doruk-parasi-token--c-367", categoryName: "dijipin-aoem-tr" },
-            { url: "https://www.dijipin.com/age-of-empires-mobile-doruk-parasi-global-token--c-396", categoryName: "dijipin-aoem-global" },
-            { url: "https://www.dijipin.com/wartune-ultra-yildiz-parasi-c-413", categoryName: "dijipin-wartune" },
-            { url: "https://www.dijipin.com/whiteout-survival-c-253", categoryName: "dijipin-whiteout" },
-        ]),
-    },
+    // {
+    //     name: "Dijipin",
+    //     run: () => dijipin.run([
+    //         { url: "https://www.dijipin.com/pubg-uc-top-up-turkey-c-165", categoryName: "dijipin-pubgm-tr" },
+    //         { url: "https://www.dijipin.com/pubg-id-yukleme-global-c-208", categoryName: "dijipin-pubgm-global" },
+    //         { url: "https://www.dijipin.com/mobile-legends--c-170", categoryName: "dijipin-mlbb-tr" },
+    //         { url: "https://www.dijipin.com/age-of-empires-mobile-doruk-parasi-token--c-367", categoryName: "dijipin-aoem-tr" },
+    //         { url: "https://www.dijipin.com/age-of-empires-mobile-doruk-parasi-global-token--c-396", categoryName: "dijipin-aoem-global" },
+    //         { url: "https://www.dijipin.com/wartune-ultra-yildiz-parasi-c-413", categoryName: "dijipin-wartune" },
+    //         { url: "https://www.dijipin.com/whiteout-survival-c-253", categoryName: "dijipin-whiteout" },
+    //     ]),
+    // },
 ];
 
 // ---------- ÇALIŞTIRICI ----------
