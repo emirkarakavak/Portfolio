@@ -319,17 +319,17 @@ const pipeline = [
     //         { url: "https://www.bynogame.com/tr/oyunlar/whiteout-survival", categoryName: "bynogame-whiteout" },
     //     ]),
     // },
-    {
-        name: "VatanGame",
-        run: () => vatangame.run([
-            { url: "https://vatangame.com/oyunlar/mobile-legends-bang-bang-elmas", categoryName: "vatangame-mlbb-tr" },
-            { url: "https://vatangame.com/oyunlar/mobile-legends-bang-bang-elmas-global", categoryName: "vatangame-mlbb-global" },
-            { url: "https://vatangame.com/oyunlar/pubg-mobile-uc-tr", categoryName: "vatangame-pubgm-tr" },
-            { url: "https://vatangame.com/oyunlar/age-of-empires-mobile-doruk-parasi", categoryName: "vatangame-aoem" },
-            { url: "https://vatangame.com/oyunlar/wartune-ultra", categoryName: "vatangame-wartune" },
-            { url: "https://vatangame.com/oyunlar/whiteout-survival-frost-star", categoryName: "vatangame-whiteout" },
-        ]),
-    },
+    // {
+    //     name: "VatanGame",
+    //     run: () => vatangame.run([
+    //         { url: "https://vatangame.com/oyunlar/mobile-legends-bang-bang-elmas", categoryName: "vatangame-mlbb-tr" },
+    //         { url: "https://vatangame.com/oyunlar/mobile-legends-bang-bang-elmas-global", categoryName: "vatangame-mlbb-global" },
+    //         { url: "https://vatangame.com/oyunlar/pubg-mobile-uc-tr", categoryName: "vatangame-pubgm-tr" },
+    //         { url: "https://vatangame.com/oyunlar/age-of-empires-mobile-doruk-parasi", categoryName: "vatangame-aoem" },
+    //         { url: "https://vatangame.com/oyunlar/wartune-ultra", categoryName: "vatangame-wartune" },
+    //         { url: "https://vatangame.com/oyunlar/whiteout-survival-frost-star", categoryName: "vatangame-whiteout" },
+    //     ]),
+    // },
     // {
     //     name: "FoxEpin",
     //     run: () => foxepin.run([
