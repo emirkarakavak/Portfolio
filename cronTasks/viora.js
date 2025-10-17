@@ -184,7 +184,7 @@ exports.run = async (input, categoryName) => {
         try {
           await upsertAndArchive(
             {
-              siteName: "VioraGame",
+              siteName: "vioragame",
               categoryName,
               itemName: norm(it.title),
               sellPrice: it.priceText.replace(" ₺",""),     // orijinal metin (örn: "39,90 TL" / "₺39,90" / "39.90")

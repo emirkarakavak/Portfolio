@@ -58,7 +58,7 @@ const SITE_LABELS = {
     foxepin: "FoxEpin",
     kabasakalonline: "Kabasakal Online",
     btkgame: "BTK Game",
-    viora: "Viora Game",
+    vioragame: "Viora Game",
     hesapcomtr: "HesapComTR",
     perdigital: "PerDigital",
     oyuneks: "Oyuneks",
