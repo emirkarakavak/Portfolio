@@ -7,6 +7,78 @@ const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 const norm = (s) => (s || "").replace(/\s+/g, " ").trim();
 
 // "31,976.99 TL" / "₺397.49" / "397.49" -> 31976.99 / 397.49
+async function ensureTRYCurrencyFox(page) {
+  // 1) ana sayfaya git (site global currency’i buradan alıyor)
+  await page.goto('https://www.foxepin.com/', { waitUntil: 'domcontentloaded', timeout: 90000 }).catch(()=>{});
+  await sleep(600);
+
+  // 2) önce gizli <select> üzerinden dene
+  let setOk = await page.evaluate(() => {
+    const sel = document.querySelector('select#global_currency, select[name="global_currency"], select[name*="currency"]');
+    if (!sel) return false;
+    // value='TRY' var mı?
+    const has = Array.from(sel.options || []).some(o => String(o.value).toUpperCase()==='TRY');
+    if (!has) return false;
+    sel.value = 'TRY';
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }).catch(()=>false);
+
+  // 3) select2 UI ile dene (gerekirse)
+  if (!setOk) {
+    // container: span#select2-global_currency-container → parent .select2-selection--single
+    const OPENERS = [
+      'span#select2-global_currency-container',
+      'label.select-block .select2-selection.select2-selection--single',
+      '.select2-container .select2-selection--single'
+    ];
+    for (const opener of OPENERS) {
+      const exists = await page.$(opener);
+      if (!exists) continue;
+      try {
+        await page.click(opener, { delay: 30 });
+        // dropdown açıldı mı?
+        await page.waitForSelector('.select2-container--open .select2-results__option', { timeout: 5000 });
+        // varsa arama kutusuna TRY yazıp Enter
+        const search = await page.$('.select2-container--open .select2-search__field');
+        if (search) {
+          await search.type('TRY', { delay: 20 });
+          await page.keyboard.press('Enter');
+          setOk = true;
+          break;
+        } else {
+          // arama yoksa listeden tıkla (TRY|TL|₺ içeren)
+          const clicked = await page.evaluate(() => {
+            const opts = Array.from(document.querySelectorAll('.select2-container--open .select2-results__option'));
+            const trg = opts.find(o => /(^|\s)(TRY|TL)(\s|$)|₺/i.test((o.textContent||'')));
+            if (!trg) return false;
+            trg.dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); // select2 bunu dinliyor
+            return true;
+          });
+          setOk = !!clicked;
+          if (setOk) break;
+        }
+      } catch {}
+    }
+  }
+
+  // 4) küçük bekleme + (opsiyonel) cookie/localStorage fallback
+  await sleep(500);
+  if (!setOk) {
+    try {
+      await page.setCookie(
+        { name: 'currency', value: 'TRY', domain: '.foxepin.com', path: '/' },
+        { name: 'currency', value: 'TRY', domain: 'www.foxepin.com', path: '/' }
+      );
+      await page.evaluate(() => {
+        try { localStorage.setItem('currency', 'TRY'); } catch {}
+        try { localStorage.setItem('Currency', 'TRY'); } catch {}
+      });
+      await page.reload({ waitUntil: 'networkidle2', timeout: 15000 }).catch(()=>{});
+    } catch {}
+  }
+}
+
 function priceTextToNumber(txt) {
   if (!txt) return null;
   let s = String(txt).replace(/[^\d.,]/g, "");
@@ -66,6 +138,7 @@ exports.run = async (input, categoryName) => {
   page.setDefaultTimeout(90000);
 
   try {
+    await ensureTRYCurrencyFox(page);
     for (const { url, categoryName } of tasks) {
       if (!/^https?:\/\//i.test(url)) { console.error("Geçersiz URL:", url); continue; }
 

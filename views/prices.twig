@@ -110,13 +110,38 @@
 <script>
 /* ---------- helpers ---------- */
 const norm = s => (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-function toNumberTRorUS(p){
-  let x = String(p ?? '').replace(/[^\d.,-]/g,'').trim();
-  if(!x) return null;
-  if(/,(\d{2})$/.test(x)) x = x.replace(/\./g,'').replace(',', '.');
-  else if(/\.(\d{2})$/.test(x) && /,\d{3}/.test(x)) x = x.replace(/,/g, '');
-  const v = parseFloat(x);
-  return Number.isFinite(v) ? v : null;
+function toNumberTRorUS(p) {
+  let s = String(p ?? '').replace(/[^\d.,-]/g, '').trim();
+  if (!s) return null;
+
+  // Son ayıracı bul (virgül veya nokta)
+  const lastComma = s.lastIndexOf(',');
+  const lastDot   = s.lastIndexOf('.');
+  const lastSep   = Math.max(lastComma, lastDot);
+  if (lastSep === -1) {
+    const v = Number(s);
+    return Number.isFinite(v) ? v : null;
+  }
+
+  const decDigits = s.length - lastSep - 1;
+
+  if (decDigits === 2) {
+    // Son ayıraç ondalık demek. Tüm rakamları topla, son iki haneyi ondalık yap.
+    const digits = s.replace(/[^\d]/g, '');
+    if (digits.length < 3) {
+      const v = Number(digits);
+      return Number.isFinite(v) ? v : null;
+    }
+    const intPart = digits.slice(0, -2);
+    const frac    = digits.slice(-2);
+    const v = Number(intPart + '.' + frac);
+    return Number.isFinite(v) ? v : null;
+  } else {
+    // Son ayıraç ondalık değil → tüm ayıraçlar binlik. Hepsini kaldır, tam sayı olarak al.
+    const digits = s.replace(/[^\d]/g, '');
+    const v = Number(digits);
+    return Number.isFinite(v) ? v : null;
+  }
 }
 function fmt(n){ return n==null ? '-' : new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n); }
 

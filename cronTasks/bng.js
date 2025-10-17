@@ -35,9 +35,10 @@ const JUNK_RE_SRC = String.raw`(cookie|consent|header|footer|nav|breadcrumb|geri
 async function extractProducts(page) {
   return await page.evaluate(({ PRICE_RE_SRC, CTA_RE_SRC, JUNK_RE_SRC }) => {
     const norm = (s) => (s || "").replace(/\s+/g, " ").trim();
-    const PRICE_RE = new RegExp(PRICE_RE_SRC, "gi");
-    const CTA_RE   = new RegExp(CTA_RE_SRC, "i");
-    const JUNK_RE  = new RegExp(JUNK_RE_SRC, "i");
+    const PRICE_RE_G = new RegExp(PRICE_RE_SRC, "gi"); // exec ile listeler
+    const PRICE_RE_TEST = new RegExp(PRICE_RE_SRC, "i");  // .test için stateful değil
+    const CTA_RE = new RegExp(CTA_RE_SRC, "i");
+    const JUNK_RE = new RegExp(JUNK_RE_SRC, "i");
 
     function toNumberTRorUS(p) {
       let x = String(p).replace(/[^\d.,]/g, "").trim();
@@ -52,7 +53,8 @@ async function extractProducts(page) {
       // sırayla tüm fiyatları al, HTML’de ~~işaretli~~ olanları kaba kestir
       const matches = [];
       let m;
-      while ((m = PRICE_RE.exec(text)) !== null) matches.push(m[0]);
+      PRICE_RE_G.lastIndex = 0; // güvenlik
+      while ((m = PRICE_RE_G.exec(text)) !== null) matches.push(m[0]);
       if (!matches.length) return null;
 
       const html = container.innerHTML || "";
@@ -68,8 +70,11 @@ async function extractProducts(page) {
 
     // URL'den oyun slug'ını çıkar (…/oyunlar/<game>/…)
     const segs = location.pathname.split("/").filter(Boolean);
-    const gameSeg = segs[2] === "oyunlar" ? segs[3] : null; // ör: mobile-legends, pubg, age-of-empires-mobile, whiteout-survival
-    const GAME_HREF_PART = gameSeg ? `/oyunlar/${gameSeg}/` : "/oyunlar/";
+    // /tr/oyunlar/<game>/...
+    let oyIdx = segs.indexOf('oyunlar');
+    let gameSeg = null;
+    if (oyIdx !== -1 && segs[oyIdx + 1]) gameSeg = segs[oyIdx + 1];
+    const GAME_HREF_PART = gameSeg ? `/oyunlar/${gameSeg}/` : "/oyunlar/"
 
     // Sayfanın büyük çöplük alanlarını komple dışla
     const scope = Array.from(document.querySelectorAll("main, #main, .main, #content, .content, body"))
@@ -81,7 +86,7 @@ async function extractProducts(page) {
       .filter(el => !JUNK_RE.test(el.id + " " + el.className))
       .filter(el => {
         const t = (el.innerText || "").trim();
-        return /(₺|TL|TRY)/i.test(t) && PRICE_RE.test(t);
+        return /(₺|TL|TRY)/i.test(t) && PRICE_RE_TEST.test(t);
       });
 
     const results = [];
@@ -150,7 +155,7 @@ exports.run = async (input, categoryName) => {
   const isStr = typeof input === "string";
 
   if (isObjArray) {
-    tasks = input.map((t,i) => {
+    tasks = input.map((t, i) => {
       if (!t?.url || !t?.categoryName) throw new Error(`Task[${i}] eksik: url & categoryName`);
       return { url: String(t.url).trim(), categoryName: String(t.categoryName).trim() };
     });
@@ -193,7 +198,7 @@ exports.run = async (input, categoryName) => {
       "button[aria-label*='Kabul']",
     ];
     for (const s of sels) {
-      try { const btn = await page.$(s); if (btn) await btn.click().catch(()=>{}); } catch {}
+      try { const btn = await page.$(s); if (btn) await btn.click().catch(() => { }); } catch { }
     }
   }
 
@@ -205,7 +210,7 @@ exports.run = async (input, categoryName) => {
         () => page.goto(url, { waitUntil: "load", timeout: 120000 })
       );
 
-      await closeConsentPopups().catch(()=>{});
+      await closeConsentPopups().catch(() => { });
 
       await Promise.race([
         page.waitForSelector("h2, h3, a", { timeout: 20000 }),
@@ -213,7 +218,7 @@ exports.run = async (input, categoryName) => {
           () => /\d{1,3}([.,]\d{3})*[.,]\d{2}\s*(TL|TRY)|₺/.test(document.body.innerText),
           { timeout: 20000 }
         ),
-      ]).catch(()=>{});
+      ]).catch(() => { });
 
       // lazy
       for (let i = 0; i < 12; i++) {
@@ -247,7 +252,7 @@ exports.run = async (input, categoryName) => {
               siteName: "bynogame",
               categoryName,
               itemName: it.title,
-              sellPrice: it.priceText.replace(" TL",""),
+              sellPrice: it.priceText.replace(" TL", ""),
               sellPriceValue: it.priceValue,
               currency: "₺",
               url,

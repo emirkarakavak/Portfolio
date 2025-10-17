@@ -25,7 +25,7 @@ function parsePriceAny(txt) {
   return Number.isFinite(v) ? v : null;
 }
 
-// >>> YENİ: kanonik string (binlik yok, nokta ondalık, 2 hane)
+// >>> kanonik string (binlik yok, nokta ondalık, 2 hane)
 function formatCanonicalPrice(n) {
   if (n == null || !Number.isFinite(n)) return null;
   return n.toFixed(2); // örn 7023.80
@@ -37,6 +37,81 @@ function uniqueBy(arr, keyFn) {
   return out;
 }
 
+/** 
+ * TL'yi UI'dan seçer: menüyü açar -> name=currency select'ine TRY seçer -> Kaydet'e basar.
+ * Başarısız olsa bile akışı bloklamaz; elinden geleni yapar.
+ */
+async function ensureTRYCurrency(page) {
+  const BTN   = 'a.w-100.lang-down';
+  const MENU  = 'div.dropdown-menu.preference-down';
+  const MENU_SHOW = 'div.dropdown-menu.preference-down.show';
+  const SELECT = 'select.preference-input[name="currency"]';
+  const SAVE   = 'button.preference-button.pref-ok';
+
+  // Ana sayfaya git (cookie/localStorage bağlamı için)
+  await page.goto('https://www.dijipin.com/', { waitUntil: 'domcontentloaded', timeout: 90000 }).catch(()=>{});
+  await sleep(600);
+
+  // Menü aç (hover + click)
+  try {
+    await page.waitForSelector(BTN, { timeout: 10000 });
+    await page.evaluate((sel) => {
+      const el = document.querySelector(sel);
+      if (el) el.scrollIntoView({ block: 'center' });
+    }, BTN);
+    try { await page.hover(BTN); } catch {}
+    await page.click(BTN);
+    await page.waitForSelector(MENU, { timeout: 8000 });
+    try { await page.waitForSelector(MENU_SHOW, { timeout: 4000 }); } catch {}
+  } catch (e) {
+    console.warn("Para birimi menüsü açılamadı:", e.message);
+  }
+
+  // name=currency select -> TRY
+  try {
+    await page.waitForSelector(SELECT, { timeout: 10000 });
+    // 1) value=TRY varsa doğrudan
+    let selectedOk = false;
+    try {
+      const res = await page.select(SELECT, 'TRY');
+      selectedOk = Array.isArray(res) && res.length > 0;
+    } catch (_) {}
+
+    // 2) value yoksa metinle bulup set et + change tetikle
+    if (!selectedOk) {
+      const picked = await page.evaluate((SEL) => {
+        const sel = document.querySelector(SEL);
+        if (!sel) return { ok: false, reason: 'no-select' };
+        const opts = Array.from(sel.options || []);
+        let trg = opts.find(o => String(o.value).toUpperCase() === 'TRY');
+        if (!trg) trg = opts.find(o => /(^|\b)(TL|TRY)(\b|$)|₺/i.test(o.textContent || ''));
+        if (!trg && opts[1]) trg = opts[1];
+        if (!trg) return { ok: false, reason: 'no-option' };
+        sel.value = trg.value;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        return { ok: true, value: trg.value, text: (trg.textContent || '').trim() };
+      }, SELECT);
+      selectedOk = !!picked.ok;
+    }
+    await sleep(250);
+  } catch (e) {
+    console.warn("TRY seçilemedi:", e.message);
+  }
+
+  // Kaydet
+  try {
+    await page.waitForSelector(SAVE, { timeout: 8000 });
+    const navPromise = page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => null);
+    await page.click(SAVE);
+    const maybeNav = await navPromise;
+    if (!maybeNav) {
+      // ajax ise kısa bekleme
+      await sleep(1000);
+    }
+  } catch (e) {
+    console.warn("Kaydet tıklanamadı:", e.message);
+  }
+}
 
 /**
  * Giriş desteği:
@@ -73,6 +148,8 @@ exports.run = async (input, categoryName) => {
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-blink-features=AutomationControlled",
+      "--disable-dev-shm-usage",
+      "--lang=tr-TR",
     ],
     defaultViewport: { width: 1366, height: 860 },
   });
@@ -80,7 +157,10 @@ exports.run = async (input, categoryName) => {
   const page = await browser.newPage();
   const ua = new UserAgent({ deviceCategory: "desktop" }).toString();
   await page.setUserAgent(ua);
-  await page.setExtraHTTPHeaders({ "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7" });
+  await page.setExtraHTTPHeaders({
+    "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7"
+  });
+  try { await page.emulateTimezone('Europe/Istanbul'); } catch {}
   await page.evaluateOnNewDocument(() => {
     Object.defineProperty(navigator, "webdriver", { get: () => false });
   });
@@ -88,12 +168,19 @@ exports.run = async (input, categoryName) => {
   page.setDefaultNavigationTimeout(90000);
 
   try {
+    // <<< ÖNCE TL'Yİ ZORLA >>>
+    await ensureTRYCurrency(page);
+
     for (const { url, categoryName } of tasks) {
       if (!/^https?:\/\//i.test(url)) { console.error("Geçersiz URL:", url); continue; }
-      
+
       const siteName = "dijipin";
 
       console.log(`Scraping: ${url} -> kategori: ${categoryName}`);
+
+      // (İsteğe bağlı) Her URL öncesi TL'yi tekrar denemek istersen aç:
+      // await ensureTRYCurrency(page);
+
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90000 })
         .then(async () => { try { await page.waitForFunction(() => document.body && document.body.innerText.length > 50, { timeout: 15000 }); } catch { } })
         .catch(() => page.goto(url, { waitUntil: "load", timeout: 90000 }));
@@ -194,7 +281,7 @@ exports.run = async (input, categoryName) => {
         try {
           const bodySnippet = await page.evaluate(() => (document.body && document.body.innerText || "").slice(0, 1200));
           console.log("DEBUG body snippet:", bodySnippet);
-        } catch {}
+        } catch { }
         continue;
       }
 
@@ -206,17 +293,16 @@ exports.run = async (input, categoryName) => {
           console.warn(`Fiyat parse edilemedi/0, atlanıyor: [${categoryName}] ${it.title} -> ${it.priceText}`);
           continue;
         }
-        // >>> YENİ: sellPrice kanonik string
-        const sellPriceStr = formatCanonicalPrice(priceValue); // örn "7023.80"
+        const sellPriceStr = formatCanonicalPrice(priceValue);
 
         try {
           await upsertAndArchive(
             {
-              siteName,                // örn "Dijipin"
+              siteName,                // örn "dijipin"
               categoryName,
               itemName: norm(it.title),
-              sellPrice: sellPriceStr,    // <-- ARTIK KANONİK
-              sellPriceValue: priceValue, // sayı
+              sellPrice: sellPriceStr,
+              sellPriceValue: priceValue,
               currency: it.currency || "₺",
               url,
             },

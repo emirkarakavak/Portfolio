@@ -58,7 +58,7 @@ const SITE_LABELS = {
     foxepin: "FoxEpin",
     kabasakalonline: "Kabasakal Online",
     btkgame: "BTK Game",
-    viora: "Viora Game",
+    vioragame: "Viora Game",
     hesapcomtr: "HesapComTR",
     perdigital: "PerDigital",
     oyuneks: "Oyuneks",
@@ -297,50 +297,50 @@ app.get("/getPrices", async (req, res) => {
 
 // ---------- PIPELINE ----------
 const pipeline = [
-    // {
-    //     name: "GameSatış (TR+GLOBAL)",
-    //     run: () => gamesatis.run([
-    //         { url: "https://www.gamesatis.com/mobile-legends-elmas-tr", categoryName: "gamesatis-mlbb-tr" },
-    //         { url: "https://www.gamesatis.com/mobile-legends-elmas-global", categoryName: "gamesatis-mlbb-global" },
-    //         { url: "https://www.gamesatis.com/pubg-mobile-uc", categoryName: "gamesatis-pubgm" },
-    //         { url: "https://www.gamesatis.com/age-of-empires-mobile", categoryName: "gamesatis-aoem" },
-    //         { url: "https://www.gamesatis.com/wartune-ultra-elmas-yildiz-parasi", categoryName: "gamesatis-wartune" },
-    //         { url: "https://www.gamesatis.com/whiteout-survival", categoryName: "gamesatis-whiteout" },
-    //     ]),
-    // },
-    // {
-    //     name: "bynogame",
-    //     run: () => bng.run([
-    //         { url: "https://www.bynogame.com/tr/oyunlar/mobile-legends/mobile-legends-turkiye", categoryName: "bynogame-mlbb-tr" },
-    //         { url: "https://www.bynogame.com/tr/oyunlar/mobile-legends/mobile-legends-global", categoryName: "bynogame-mlbb-global" },
-    //         { url: "https://www.bynogame.com/tr/oyunlar/mobile-legends/mobile-legends-elmas-avantajli-fiyat", categoryName: "bynogame-mlbb-advantage" },
-    //         { url: "https://www.bynogame.com/tr/oyunlar/pubg/pubg-mobile-uc", categoryName: "bynogame-pubgm" },
-    //         { url: "https://www.bynogame.com/tr/oyunlar/age-of-empires-mobile/age-of-empires-apex", categoryName: "bynogame-aoem" },
-    //         { url: "https://www.bynogame.com/tr/oyunlar/whiteout-survival", categoryName: "bynogame-whiteout" },
-    //     ]),
-    // },
-    // {
-    //     name: "VatanGame",
-    //     run: () => vatangame.run([
-    //         { url: "https://vatangame.com/oyunlar/mobile-legends-bang-bang-elmas", categoryName: "vatangame-mlbb-tr" },
-    //         { url: "https://vatangame.com/oyunlar/global-mobile-legends-bang-bang-elmas", categoryName: "vatangame-mlbb-global" },
-    //         { url: "https://vatangame.com/oyunlar/pubg-mobile-uc-tr", categoryName: "vatangame-pubgm-tr" },
-    //         { url: "https://vatangame.com/oyunlar/age-of-empires-mobile-doruk-parasi", categoryName: "vatangame-aoem" },
-    //         { url: "https://vatangame.com/oyunlar/wartune-ultra", categoryName: "vatangame-wartune" },
-    //         { url: "https://vatangame.com/oyunlar/whiteout-survival-frost-star", categoryName: "vatangame-whiteout" },
-    //     ]),
-    // },
-    // {
-    //     name: "FoxEpin",
-    //     run: () => foxepin.run([
-    //         { url: "https://www.foxepin.com/game/pubg-mobile/tr-id-yukleme", categoryName: "foxepin-pubgm-tr" },
-    //         { url: "https://www.foxepin.com/game/pubg-mobile/global-id-yukleme", categoryName: "foxepin-pubgm-global" },
-    //         { url: "https://www.foxepin.com/game/mobile-legends/mobile-legends-turkiye", categoryName: "foxepin-mlbb-tr" },
-    //         { url: "https://www.foxepin.com/game/mobile-legends/mobile-legends-turkiye-elmas", categoryName: "foxepin-mlbb-global" },
-    //         { url: "https://www.foxepin.com/game/age-of-empires-mobile/age-of-empires-mobile-token", categoryName: "foxepin-aoem" },
-    //         { url: "https://www.foxepin.com/game/whiteout-survival/whiteout-survival", categoryName: "foxepin-whiteout" },
-    //     ]),
-    // },
+    {
+        name: "GameSatış (TR+GLOBAL)",
+        run: () => gamesatis.run([
+            { url: "https://www.gamesatis.com/mobile-legends-elmas-tr", categoryName: "gamesatis-mlbb-tr" },
+            { url: "https://www.gamesatis.com/mobile-legends-elmas-global", categoryName: "gamesatis-mlbb-global" },
+            { url: "https://www.gamesatis.com/pubg-mobile-uc", categoryName: "gamesatis-pubgm" },
+            { url: "https://www.gamesatis.com/age-of-empires-mobile", categoryName: "gamesatis-aoem" },
+            { url: "https://www.gamesatis.com/wartune-ultra-elmas-yildiz-parasi", categoryName: "gamesatis-wartune" },
+            { url: "https://www.gamesatis.com/whiteout-survival", categoryName: "gamesatis-whiteout" },
+        ]),
+    },
+    {
+        name: "bynogame",
+        run: () => bng.run([
+            { url: "https://www.bynogame.com/tr/oyunlar/mobile-legends/mobile-legends-turkiye", categoryName: "bynogame-mlbb-tr" },
+            // { url: "https://www.bynogame.com/tr/oyunlar/mobile-legends/mobile-legends-global", categoryName: "bynogame-mlbb-global" },
+            // { url: "https://www.bynogame.com/tr/oyunlar/mobile-legends/mobile-legends-elmas-avantajli-fiyat", categoryName: "bynogame-mlbb-advantage" },
+            // { url: "https://www.bynogame.com/tr/oyunlar/pubg/pubg-mobile-uc", categoryName: "bynogame-pubgm" },
+            // { url: "https://www.bynogame.com/tr/oyunlar/age-of-empires-mobile/age-of-empires-apex", categoryName: "bynogame-aoem" },
+            // { url: "https://www.bynogame.com/tr/oyunlar/whiteout-survival", categoryName: "bynogame-whiteout" },
+        ]),
+    },
+    {
+        name: "VatanGame",
+        run: () => vatangame.run([
+            { url: "https://vatangame.com/oyunlar/mobile-legends-bang-bang-elmas", categoryName: "vatangame-mlbb-tr" },
+            { url: "https://vatangame.com/oyunlar/global-mobile-legends-bang-bang-elmas", categoryName: "vatangame-mlbb-global" },
+            { url: "https://vatangame.com/oyunlar/pubg-mobile-uc-tr", categoryName: "vatangame-pubgm-tr" },
+            { url: "https://vatangame.com/oyunlar/age-of-empires-mobile-doruk-parasi", categoryName: "vatangame-aoem" },
+            { url: "https://vatangame.com/oyunlar/wartune-ultra", categoryName: "vatangame-wartune" },
+            { url: "https://vatangame.com/oyunlar/whiteout-survival-frost-star", categoryName: "vatangame-whiteout" },
+        ]),
+    },
+    {
+        name: "FoxEpin",
+        run: () => foxepin.run([
+            { url: "https://www.foxepin.com/game/pubg-mobile/tr-id-yukleme", categoryName: "foxepin-pubgm-tr" },
+            { url: "https://www.foxepin.com/game/pubg-mobile/global-id-yukleme", categoryName: "foxepin-pubgm-global" },
+            { url: "https://www.foxepin.com/game/mobile-legends/mobile-legends-turkiye", categoryName: "foxepin-mlbb-tr" },
+            { url: "https://www.foxepin.com/game/mobile-legends/mobile-legends-turkiye-elmas", categoryName: "foxepin-mlbb-global" },
+            { url: "https://www.foxepin.com/game/age-of-empires-mobile/age-of-empires-mobile-token", categoryName: "foxepin-aoem" },
+            { url: "https://www.foxepin.com/game/whiteout-survival/whiteout-survival", categoryName: "foxepin-whiteout" },
+        ]),
+    },
     // {
     //     name: "Kabasakal",
     //     run: () => kabasakal.run([
@@ -352,29 +352,29 @@ const pipeline = [
     //         { url: "https://kabasakalonline.com/urunler/1034/whiteout-survival", categoryName: "kabasakal-whiteout" },
     //     ]),
     // },
-    // {
-    //     name: "BTKGame",
-    //     run: () => btkgame.run([
-    //         { url: "https://www.btkgame.com/pubg-mobile-uc-c-6", categoryName: "btkgame-pubgm-tr" },
-    //         { url: "https://www.btkgame.com/pubg-mobile-uc-global-id-yukleme-c-172", categoryName: "btkgame-pubgm-global" },
-    //         { url: "https://www.btkgame.com/mobile-legends-elmas-tr-c-10", categoryName: "btkgame-mlbb" },
-    //         { url: "https://www.btkgame.com/age-of-empires-mobile-doruk-parasi-token-c-157", categoryName: "btkgame-aoem" },
-    //         { url: "https://www.btkgame.com/wartune-ultra-yildiz-parasi-c-168", categoryName: "btkgame-wartune" },
-    //         { url: "https://www.btkgame.com/whiteout-survival-frost-star-c-81", categoryName: "btkgame-whiteout" },
-    //     ]),
-    // },
-    // {
-    //     name: "VioraGame",
-    //     run: () => viora.run([
-    //         { url: "https://www.vioragame.com/pubg-mobile", categoryName: "viora-pubgm-tr" },
-    //         { url: "https://www.vioragame.com/pubg-mobile-uc-global-top-up", categoryName: "viora-pubgm-global" },
-    //         { url: "https://www.vioragame.com/mobile-legends-elmas-tr", categoryName: "viora-mlbb-tr" },
-    //         { url: "https://www.vioragame.com/mobile-legends-bang-bang-elmas", categoryName: "viora-mlbb-global" },
-    //         { url: "https://www.vioragame.com/age-of-empires-mobile-doruk-parasi", categoryName: "viora-aoem" },
-    //         { url: "https://www.vioragame.com/wartune-ultra-yildiz-parasi", categoryName: "viora-wartune" },
-    //         { url: "https://www.vioragame.com/whiteout-survival-frost-star", categoryName: "viora-whiteout" },
-    //     ]),
-    // },
+    {
+        name: "BTKGame",
+        run: () => btkgame.run([
+            { url: "https://www.btkgame.com/pubg-mobile-uc-c-6", categoryName: "btkgame-pubgm-tr" },
+            { url: "https://www.btkgame.com/pubg-mobile-uc-global-id-yukleme-c-172", categoryName: "btkgame-pubgm-global" },
+            { url: "https://www.btkgame.com/mobile-legends-elmas-tr-c-10", categoryName: "btkgame-mlbb" },
+            { url: "https://www.btkgame.com/age-of-empires-mobile-doruk-parasi-token-c-157", categoryName: "btkgame-aoem" },
+            { url: "https://www.btkgame.com/wartune-ultra-yildiz-parasi-c-168", categoryName: "btkgame-wartune" },
+            { url: "https://www.btkgame.com/whiteout-survival-frost-star-c-81", categoryName: "btkgame-whiteout" },
+        ]),
+    },
+    {
+        name: "VioraGame",
+        run: () => viora.run([
+            { url: "https://www.vioragame.com/pubg-mobile", categoryName: "viora-pubgm-tr" },
+            { url: "https://www.vioragame.com/pubg-mobile-uc-global-top-up", categoryName: "viora-pubgm-global" },
+            { url: "https://www.vioragame.com/mobile-legends-elmas-tr", categoryName: "viora-mlbb-tr" },
+            { url: "https://www.vioragame.com/mobile-legends-bang-bang-elmas", categoryName: "viora-mlbb-global" },
+            { url: "https://www.vioragame.com/age-of-empires-mobile-doruk-parasi", categoryName: "viora-aoem" },
+            { url: "https://www.vioragame.com/wartune-ultra-yildiz-parasi", categoryName: "viora-wartune" },
+            { url: "https://www.vioragame.com/whiteout-survival-frost-star", categoryName: "viora-whiteout" },
+        ]),
+    },
     {
         name: "Dijipin",
         run: () => dijipin.run([
@@ -395,7 +395,7 @@ const pipeline = [
 //   runAllOnce().catch(e => console.error("cron hata:", e));
 // }, { scheduled: true, timezone: "Europe/Istanbul" });
 
-// runAllOnce().catch(e => console.error("cron hata:", e));
+runAllOnce().catch(e => console.error("cron hata:", e));
 
 async function runAllOnce(selected = []) {
     const list = selected.length
